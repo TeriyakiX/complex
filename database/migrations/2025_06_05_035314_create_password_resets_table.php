@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('password_resets', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('(UUID())'));
+            $table->uuid('id')->primary();
             $table->string('email')->index();
             $table->string('code');
             $table->timestamp('created_at')->nullable();
