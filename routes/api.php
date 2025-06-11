@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ImportManufacturerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -7,6 +8,8 @@ use App\Http\Controllers\CallbackController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\ProductController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -97,4 +100,6 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::put('/{product}', [ProductController::class, 'update']);
         Route::delete('/{product}', [ProductController::class, 'destroy']);
     });
+
+    Route::post('/manufacturers/import', [ImportManufacturerController::class, 'import']);
 });
