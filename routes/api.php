@@ -32,6 +32,7 @@ Route::prefix('auth')->group(function () {
 Route::prefix('password')->group(function () {
     Route::post('/send-code', [PasswordResetController::class, 'sendResetCode']); // Отправка кода
     Route::post('/reset', [PasswordResetController::class, 'resetPassword']);     // Сброс пароля
+    Route::post('/check-code', [PasswordResetController::class, 'checkCode']);    // Проверка кода
 });
 
 /*
@@ -41,6 +42,16 @@ Route::prefix('password')->group(function () {
 */
 Route::get('/reviews', [ReviewController::class, 'index']);            // Публичные отзывы
 Route::post('/callback', [CallbackController::class, 'store']);       // Обратная связь
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC PRODUCTS
+|--------------------------------------------------------------------------
+*/
+Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/{product}', [ProductController::class, 'show']);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -76,13 +87,11 @@ Route::middleware('auth:api')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PRODUCTS CRUD
+    | PRODUCTS CRUD (ADMIN/PROTECTED)
     |--------------------------------------------------------------------------
     */
     Route::prefix('products')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
         Route::post('/', [ProductController::class, 'store']);
-        Route::get('/{product}', [ProductController::class, 'show']);
         Route::put('/{product}', [ProductController::class, 'update']);
         Route::delete('/{product}', [ProductController::class, 'destroy']);
     });

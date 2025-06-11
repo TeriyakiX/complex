@@ -12,7 +12,7 @@ class CallbackController extends Controller
         $callback = Callback::create($request->validated());
 
         return response()->json([
-            'message' => 'Заявка успешно отправлена!',
+            'message' => 'Заявка успешно отправлена',
             'data'    => $callback,
         ], 201);
     }

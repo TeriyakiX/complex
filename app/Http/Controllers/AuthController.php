@@ -21,8 +21,10 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Регистрация успешна',
-            'user'    => new UserResource($user),
-            'token'   => $token,
+            'data'    => [
+                'user'  => new UserResource($user),
+                'token' => $token,
+            ],
         ], 201);
     }
 
@@ -31,19 +33,23 @@ class AuthController extends Controller
         $credentials = $request->validated();
 
         if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Неверные данные'], 401);
+            return response()->json(['message' => 'Неверные данные'], 401);
         }
 
         return response()->json([
             'message' => 'Успешный вход',
-            'token'   => $token,
+            'data'    => [
+                'token' => $token,
+            ],
         ]);
     }
 
     public function me()
     {
         return response()->json([
-            'user' => new UserResource(auth()->user()),
+            'data' => [
+                'user' => new UserResource(auth()->user()),
+            ],
         ]);
     }
 
@@ -58,7 +64,9 @@ class AuthController extends Controller
     {
         return response()->json([
             'message' => 'Токен обновлён',
-            'token'   => auth()->refresh(),
+            'data'    => [
+                'token' => auth()->refresh(),
+            ],
         ]);
     }
 }

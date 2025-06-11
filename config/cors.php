@@ -22,7 +22,8 @@ return [
     'allowed_origins' => [
         'https://ekbcomplex.netlify.app',
         'http://localhost:5173',
-        'http://localhost:5174', // <- добавляем сюда
+        'http://localhost:5174',
+        'http://localhost:5176', // ← добавь сюда
     ],
 
     'allowed_origins_patterns' => [],

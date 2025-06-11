@@ -11,14 +11,13 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        // Получаем параметр 'per_page' из query, если нужно менять количество на странице
-        $perPage = $request->query('per_page', 10); // по умолчанию 10
+        $perPage = $request->query('per_page', 10);
 
-        // Получаем пагинацию с eager loading производителя
         $products = Product::with('manufacturer')->paginate($perPage);
 
-        // Возвращаем коллекцию ресурсов с пагинацией
-        return ProductResource::collection($products);
+        return ProductResource::collection($products)->additional([
+            'message' => 'Список продуктов',
+        ]);
     }
 
     public function store(ProductRequest $request)
@@ -27,21 +26,28 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        return new ProductResource($product->load('manufacturer'));
+        return response()->json([
+            'message' => 'Продукт создан',
+            'data'    => new ProductResource($product->load('manufacturer')),
+        ], 201);
     }
 
     public function show(Product $product)
     {
-        return new ProductResource($product->load('manufacturer'));
+        return response()->json([
+            'message' => 'Данные продукта',
+            'data'    => new ProductResource($product->load('manufacturer')),
+        ]);
     }
 
     public function update(ProductRequest $request, Product $product)
     {
-        $data = $request->validated();
+        $product->update($request->validated());
 
-        $product->update($data);
-
-        return new ProductResource($product->load('manufacturer'));
+        return response()->json([
+            'message' => 'Продукт обновлён',
+            'data'    => new ProductResource($product->load('manufacturer')),
+        ]);
     }
 
     public function destroy(Product $product)
