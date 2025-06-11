@@ -13,7 +13,7 @@ use App\Http\Controllers\ProductController;
 | AUTH
 |--------------------------------------------------------------------------
 */
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('api')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);   // Регистрация
     Route::post('/login', [AuthController::class, 'login']);         // Логин
 
@@ -29,7 +29,7 @@ Route::prefix('auth')->group(function () {
 | PASSWORD RESET
 |--------------------------------------------------------------------------
 */
-Route::prefix('password')->group(function () {
+Route::prefix('password')->middleware('api')->group(function () {
     Route::post('/send-code', [PasswordResetController::class, 'sendResetCode']); // Отправка кода
     Route::post('/reset', [PasswordResetController::class, 'resetPassword']);     // Сброс пароля
     Route::post('/check-code', [PasswordResetController::class, 'checkCode']);    // Проверка кода
@@ -40,15 +40,17 @@ Route::prefix('password')->group(function () {
 | PUBLIC REVIEWS & CALLBACK
 |--------------------------------------------------------------------------
 */
-Route::get('/reviews', [ReviewController::class, 'index']);            // Публичные отзывы
-Route::post('/callback', [CallbackController::class, 'store']);       // Обратная связь
+Route::middleware('api')->group(function () {
+    Route::get('/reviews', [ReviewController::class, 'index']);         // Публичные отзывы
+    Route::post('/callback', [CallbackController::class, 'store']);    // Обратная связь
+});
 
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PRODUCTS
 |--------------------------------------------------------------------------
 */
-Route::prefix('products')->group(function () {
+Route::prefix('products')->middleware('api')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/{product}', [ProductController::class, 'show']);
 });
@@ -58,7 +60,7 @@ Route::prefix('products')->group(function () {
 | AUTH-ONLY ROUTES
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['api', 'auth:api'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
