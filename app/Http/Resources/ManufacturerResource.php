@@ -10,10 +10,12 @@ class ManufacturerResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id'    => $this->id,
-            'name'  => $this->name,
-            'image' => $this->image ? url(Storage::url($this->image)) : null,
-            'created_at' => $this->created_at->toDateTimeString(),
+            'id'       => $this->id,
+            'name'     => $this->name,
+            'image'    => $this->image
+                ? asset('storage/' . $this->image)
+                : null,
+            'products' => ProductResource::collection($this->whenLoaded('products')),
         ];
     }
 }

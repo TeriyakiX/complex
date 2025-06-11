@@ -59,19 +59,21 @@ class PasswordResetController extends Controller
     public function checkCode(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
             'code'  => 'required'
         ]);
 
         $reset = DB::table('password_resets')
-            ->where('email', $request->email)
             ->where('code', $request->code)
             ->first();
 
-        if (!$reset || Carbon::parse($reset->created_at)->addMinutes(15)->isPast()) {
-            return response()->json(['message' => 'Код недействителен или истёк'], 400);
+        if (!$reset) {
+            return response()->json(['message' => 'Код неверный'], 400);
         }
 
-        return response()->json(['message' => 'Код подтвержден']);
+        if (Carbon::parse($reset->created_at)->addMinutes(15)->isPast()) {
+            return response()->json(['message' => 'Код истёк'], 400);
+        }
+
+        return response()->json(['message' => 'Код подтверждён'], 201);
     }
 }

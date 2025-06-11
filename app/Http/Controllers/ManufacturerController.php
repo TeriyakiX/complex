@@ -4,16 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ManufacturerRequest;
 use App\Http\Resources\ManufacturerResource;
+use App\Http\Resources\ProductResource;
 use App\Models\Manufacturer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ManufacturerController extends Controller
 {
     public function index()
     {
+        $manufacturers = Manufacturer::withCount('products')->get();
+
+        $data = $manufacturers->map(function ($manufacturer) {
+            return [
+                'id' => $manufacturer->id,
+                'name' => $manufacturer->name,
+                'image' => $manufacturer->image
+                    ? asset('storage/' . $manufacturer->image)
+                    : null,
+                'products_count' => $manufacturer->products_count,
+            ];
+        });
+
         return response()->json([
             'message' => 'Список производителей',
-            'data'    => ManufacturerResource::collection(Manufacturer::all()),
+            'data'    => $data,
         ]);
     }
 
@@ -33,11 +48,18 @@ class ManufacturerController extends Controller
         ], 201);
     }
 
-    public function show(Manufacturer $manufacturer)
+    public function show(Request $request, Manufacturer $manufacturer)
     {
+        $perPage = $request->query('per_page', 10);
+
+        $products = $manufacturer->products()->paginate($perPage);
+
         return response()->json([
             'message' => 'Данные производителя',
-            'data'    => new ManufacturerResource($manufacturer),
+            'data' => [
+                'manufacturer' => new ManufacturerResource($manufacturer),
+                'products'     => ProductResource::collection($products)->response()->getData(true),
+            ],
         ]);
     }
 
