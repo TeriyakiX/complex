@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [ 'https://ekbcomplex.netlify.app','http://localhost:5173'],
+    'allowed_origins' => [
+        'https://ekbcomplex.netlify.app',
+        'http://localhost:5173',
+        'http://localhost:5174', // <- добавляем сюда
+    ],
 
     'allowed_origins_patterns' => [],
 
