@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Storage;
 
 class ManufacturerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $manufacturers = Manufacturer::withCount('products')->get();
+        $perPage = $request->query('per_page', 15); // можно передать ?per_page=20, по умолчанию 15
 
-        $data = $manufacturers->map(function ($manufacturer) {
+        $manufacturers = Manufacturer::withCount('products')->paginate($perPage);
+
+        $data = $manufacturers->getCollection()->map(function ($manufacturer) {
             return [
                 'id' => $manufacturer->id,
                 'name' => $manufacturer->name,
@@ -29,6 +31,12 @@ class ManufacturerController extends Controller
         return response()->json([
             'message' => 'Список производителей',
             'data'    => $data,
+            'pagination' => [
+                'current_page' => $manufacturers->currentPage(),
+                'last_page' => $manufacturers->lastPage(),
+                'per_page' => $manufacturers->perPage(),
+                'total' => $manufacturers->total(),
+            ],
         ]);
     }
 
