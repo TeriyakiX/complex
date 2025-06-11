@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Mail\ResetCodeMail;
+use Illuminate\Support\Str;
 
 class PasswordResetController extends Controller
 {
@@ -21,7 +22,7 @@ class PasswordResetController extends Controller
 
         DB::table('password_resets')->updateOrInsert(
             ['email' => $request->email],
-            ['code' => $code, 'created_at' => Carbon::now()]
+            ['code' => $code, 'id' => Str::uuid(),'created_at' => Carbon::now()]
         );
 
         Mail::to($request->email)->send(new ResetCodeMail($code));
