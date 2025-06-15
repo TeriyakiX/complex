@@ -57,6 +57,10 @@ Route::prefix('products')->middleware('api')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/{product}', [ProductController::class, 'show']);
 });
+Route::prefix('manufacturers')->group(function () {
+    Route::get('/', [ManufacturerController::class, 'index']);
+    Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -83,9 +87,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('manufacturers')->group(function () {
-        Route::get('/', [ManufacturerController::class, 'index']);
         Route::post('/', [ManufacturerController::class, 'store']);
-        Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
         Route::put('/{manufacturer}', [ManufacturerController::class, 'update']);
         Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy']);
     });

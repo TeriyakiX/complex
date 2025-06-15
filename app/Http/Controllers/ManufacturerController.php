@@ -13,33 +13,40 @@ class ManufacturerController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 15); // можно передать ?per_page=20, по умолчанию 15
+        $perPage = $request->query('per_page', 15);
 
         $manufacturers = Manufacturer::withCount('products')->paginate($perPage);
 
-        $data = $manufacturers->getCollection()->map(function ($manufacturer) {
-            return [
-                'id' => $manufacturer->id,
-                'name' => $manufacturer->name,
-                'image' => $manufacturer->image
-                    ? asset('storage/' . $manufacturer->image)
-                    : null,
-                'products_count' => $manufacturer->products_count,
-            ];
-        });
+        $resourceData = ManufacturerResource::collection($manufacturers)->response()->getData(true);
 
         return response()->json([
             'message' => 'Список производителей',
-            'data'    => $data,
-            'pagination' => [
-                'current_page' => $manufacturers->currentPage(),
-                'last_page' => $manufacturers->lastPage(),
-                'per_page' => $manufacturers->perPage(),
-                'total' => $manufacturers->total(),
-            ],
+            'data'    => $resourceData['data'],    // именно массив ресурсов без вложенного data
+            'links'   => $resourceData['links'],   // пагинационные ссылки
+            'meta'    => $resourceData['meta'],    // мета инфо пагинации
         ]);
     }
 
+    public function show(Request $request, Manufacturer $manufacturer)
+    {
+        $perPage = $request->query('per_page', 10);
+        $products = $manufacturer->products()->paginate($perPage);
+
+        // Присваиваем products как отношение, чтобы Resource мог загрузить
+        $manufacturer->setRelation('products', collect($products->items()));
+
+        $productsData = ProductResource::collection($products)->response()->getData(true);
+
+        return response()->json([
+            'message' => 'Данные производителя',
+            'data' => [
+                'manufacturer' => new ManufacturerResource($manufacturer),
+                'products' => $productsData['data'],  // только список продуктов
+                'links' => $productsData['links'],    // ссылки пагинации по продуктам
+                'meta' => $productsData['meta'],      // мета инфо пагинации по продуктам
+            ],
+        ]);
+    }
     public function store(ManufacturerRequest $request)
     {
         $data = $request->validated();
@@ -56,20 +63,6 @@ class ManufacturerController extends Controller
         ], 201);
     }
 
-    public function show(Request $request, Manufacturer $manufacturer)
-    {
-        $perPage = $request->query('per_page', 10);
-
-        $products = $manufacturer->products()->paginate($perPage);
-
-        return response()->json([
-            'message' => 'Данные производителя',
-            'data' => [
-                'manufacturer' => new ManufacturerResource($manufacturer),
-                'products'     => ProductResource::collection($products)->response()->getData(true),
-            ],
-        ]);
-    }
 
     public function update(ManufacturerRequest $request, Manufacturer $manufacturer)
     {
