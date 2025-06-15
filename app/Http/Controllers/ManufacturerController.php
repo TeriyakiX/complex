@@ -29,7 +29,7 @@ class ManufacturerController extends Controller
 
     public function show(Request $request, Manufacturer $manufacturer)
     {
-        $perPage = $request->query('per_page', 10);
+        $perPage = $request->query('per_page', 15);
         $products = $manufacturer->products()->paginate($perPage);
 
         // Присваиваем products как отношение, чтобы Resource мог загрузить
@@ -41,10 +41,9 @@ class ManufacturerController extends Controller
             'message' => 'Данные производителя',
             'data' => [
                 'manufacturer' => new ManufacturerResource($manufacturer),
-                'products' => $productsData['data'],  // только список продуктов
-                'links' => $productsData['links'],    // ссылки пагинации по продуктам
-                'meta' => $productsData['meta'],      // мета инфо пагинации по продуктам
             ],
+            'links' => $productsData['links'],    // ссылки пагинации по продуктам
+            'meta' => $productsData['meta'],      // мета инфо пагинации по продуктам
         ]);
     }
     public function store(ManufacturerRequest $request)
