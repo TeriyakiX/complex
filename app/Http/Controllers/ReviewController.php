@@ -6,18 +6,24 @@ use App\Http\Requests\StoreReviewRequest;
 use App\Http\Resources\ReviewResource;
 use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 
 class ReviewController extends Controller
 {
-    public function all()
+    public function all(Request $request)
     {
         $this->authorize('is-admin');
 
-        $reviews = Review::with('user')->latest()->get();
+        $perPage = $request->query('per_page', 15);
+
+        // Пагинация с лимитом на странице
+        $reviews = Review::with('user')->latest()->paginate($perPage);
 
         return response()->json([
             'message' => 'Все отзывы',
             'data'    => ReviewResource::collection($reviews),
+            'links'   => $reviews->links(),  // Пагинационные ссылки
+            'meta'    => $reviews->toArray()['meta'],  // Мета информация пагинации
         ]);
     }
 
@@ -35,16 +41,21 @@ class ReviewController extends Controller
         ], 201);
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->query('per_page', 15);
+
+        // Пагинация одобренных отзывов
         $reviews = Review::with('user')
             ->where('status', 'approved')
             ->latest()
-            ->get();
+            ->paginate($perPage);
 
         return response()->json([
             'message' => 'Одобренные отзывы',
             'data'    => ReviewResource::collection($reviews),
+            'links'   => $reviews->links(),
+            'meta'    => $reviews->toArray()['meta'],
         ]);
     }
 
