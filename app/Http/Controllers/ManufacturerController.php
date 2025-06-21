@@ -14,16 +14,24 @@ class ManufacturerController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 15);
+        $search = $request->query('query');
 
-        $manufacturers = Manufacturer::withCount('products')->paginate($perPage);
+        $manufacturers = Manufacturer::withCount('products')
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhereHas('products', function ($productQuery) use ($search) {
+                        $productQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            })
+            ->paginate($perPage);
 
         $resourceData = ManufacturerResource::collection($manufacturers)->response()->getData(true);
 
         return response()->json([
             'message' => 'Список производителей',
-            'data'    => $resourceData['data'],    // именно массив ресурсов без вложенного data
-            'links'   => $resourceData['links'],   // пагинационные ссылки
-            'meta'    => $resourceData['meta'],    // мета инфо пагинации
+            'data'    => $resourceData['data'],
+            'links'   => $resourceData['links'],
+            'meta'    => $resourceData['meta'],
         ]);
     }
 
@@ -93,4 +101,7 @@ class ManufacturerController extends Controller
 
         return response()->json(['message' => 'Производитель удалён']);
     }
+
+
+
 }

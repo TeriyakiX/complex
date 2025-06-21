@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ManufacturerRequest extends FormRequest
 {
@@ -17,5 +19,13 @@ class ManufacturerRequest extends FormRequest
             'name'  => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'message' => 'Неверные данные',
+            'errors' => $validator->errors(),
+        ], 400));
     }
 }

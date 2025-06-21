@@ -26,6 +26,7 @@ class ReviewController extends Controller
         $review = Review::create([
             'user_id' => Auth::id(),
             'text'    => $request->text,
+            'rating' => $request->rating,
         ]);
 
         return response()->json([

@@ -9,5 +9,5 @@ use Illuminate\Database\Eloquent\Model;
 class Callback extends Model
 {
     use HasUuid;
-    protected $fillable = ['name', 'phone', 'agree'];
+    protected $fillable = ['name', 'phone', 'text','agree'];
 }

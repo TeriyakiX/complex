@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CallbackRequest;
+use App\Http\Resources\CallbackResource;
 use App\Models\Callback;
 
 class CallbackController extends Controller
@@ -13,7 +14,7 @@ class CallbackController extends Controller
 
         return response()->json([
             'message' => 'Заявка успешно отправлена',
-            'data'    => $callback,
+            'data'    => new CallbackResource($callback),
         ], 201);
     }
 }

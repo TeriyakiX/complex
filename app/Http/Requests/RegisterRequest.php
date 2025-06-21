@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class RegisterRequest extends FormRequest
 {
@@ -20,5 +22,13 @@ class RegisterRequest extends FormRequest
             'phone'    => 'required|string|max:20|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'message' => 'Неверные данные',
+            'errors' => $validator->errors(),
+        ], 400));
     }
 }

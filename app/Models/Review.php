@@ -11,7 +11,12 @@ class Review extends Model
     protected $fillable = [
         'user_id',
         'text',
+        'rating',
         'status',
+    ];
+    
+    protected $casts = [
+        'rating' => 'integer',
     ];
 
     public function user()

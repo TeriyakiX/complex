@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\ImportManufacturerController;
+use App\Http\Controllers\MarketplaceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\CallbackController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ManufacturerController;
 use App\Http\Controllers\ProductController;
+use \App\Http\Controllers\Admin\MarketplaceImportController;
 
 
 
@@ -62,6 +65,10 @@ Route::prefix('manufacturers')->group(function () {
     Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
 });
 
+Route::prefix('marketplaces')->group(function () {
+    Route::get('/', [MarketplaceController::class, 'index']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | AUTH-ONLY ROUTES
@@ -76,32 +83,33 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     */
     Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
 
-    Route::middleware('can:is-admin')->group(function () {
-        Route::post('/reviews/{review}/approve', [ReviewController::class, 'approve']); // Одобрение отзыва
-        Route::get('/admin/reviews', [ReviewController::class, 'all']);                 // Все отзывы (админ)
-    });
 
-    /*
-    |--------------------------------------------------------------------------
-    | MANUFACTURERS CRUD
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('manufacturers')->group(function () {
-        Route::post('/', [ManufacturerController::class, 'store']);
-        Route::put('/{manufacturer}', [ManufacturerController::class, 'update']);
-        Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy']);
-    });
 
-    /*
-    |--------------------------------------------------------------------------
-    | PRODUCTS CRUD (ADMIN/PROTECTED)
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('products')->group(function () {
-        Route::post('/', [ProductController::class, 'store']);
-        Route::put('/{product}', [ProductController::class, 'update']);
-        Route::delete('/{product}', [ProductController::class, 'destroy']);
-    });
+    Route::prefix('admin')->group(function () {
 
-    Route::post('/manufacturers/import', [ImportManufacturerController::class, 'import']);
+        Route::middleware('can:is-admin')->group(function () {
+            Route::post('/reviews/{review}/approve', [ReviewController::class, 'approve']); // Одобрение отзыва
+            Route::get('/reviews', [ReviewController::class, 'all']);// Все отзывы (админ)
+
+
+            Route::prefix('products')->group(function () {
+                Route::post('/', [ProductController::class, 'store']);
+                Route::put('/{product}', [ProductController::class, 'update']);
+                Route::delete('/{product}', [ProductController::class, 'destroy']);
+            });
+
+            Route::prefix('manufacturers')->group(function () {
+                Route::post('/', [ManufacturerController::class, 'store']);
+                Route::put('/{manufacturer}', [ManufacturerController::class, 'update']);
+                Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy']);
+                Route::post('/import', [ImportManufacturerController::class, 'import']);
+            });
+
+
+            Route::post('/marketplaces/import', [MarketplaceImportController::class, 'import']);
+            Route::get('/stats', [AdminStatsController::class, 'index']);
+        });
+
+
+    });
 });
