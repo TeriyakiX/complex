@@ -16,13 +16,14 @@ class ReviewController extends Controller
 
         $perPage = $request->get('per_page', 15);
 
+        // Пагинация с лимитом на странице
         $reviews = Review::with('user')->latest()->paginate($perPage);
 
         return response()->json([
             'message' => 'Все отзывы',
             'data'    => ReviewResource::collection($reviews),
             'links'   => $reviews->links(),
-            'meta'    => $reviews->toArray()['meta'],
+            'meta'    => $reviews->getMeta(),
         ]);
     }
 
