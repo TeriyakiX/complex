@@ -21,15 +21,5 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(Validator $validator)
-    {
-        $errors = $validator->errors()->all();
-        $message = 'Неверные данные: ' . implode(', ', $errors);
 
-        // Генерируем ответ
-        throw new HttpResponseException(response()->json([
-            'message' => $message,
-            'errors'  => $validator->errors(),
-        ], 400));
-    }
 }
