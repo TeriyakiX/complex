@@ -16,14 +16,15 @@ class ReviewController extends Controller
 
         $perPage = $request->get('per_page', 15);
 
-        // Пагинация с лимитом на странице
         $reviews = Review::with('user')->latest()->paginate($perPage);
+
+        $resourceData = ReviewResource::collection($reviews)->response()->getData(true);
 
         return response()->json([
             'message' => 'Все отзывы',
-            'data'    => ReviewResource::collection($reviews),
-            'links'   => $reviews->links(),
-            'meta'    => $reviews->getMeta(),
+            'data'    => $resourceData['data'],
+            'links'   => $resourceData['links'],
+            'meta'    => $resourceData['meta'],
         ]);
     }
 
@@ -45,17 +46,18 @@ class ReviewController extends Controller
     {
         $perPage = $request->query('per_page', 15);
 
-        // Пагинация одобренных отзывов
         $reviews = Review::with('user')
             ->where('status', 'approved')
             ->latest()
             ->paginate($perPage);
 
+        $resourceData = ReviewResource::collection($reviews)->response()->getData(true);
+
         return response()->json([
             'message' => 'Одобренные отзывы',
-            'data'    => ReviewResource::collection($reviews),
-            'links'   => $reviews->links(),
-            'meta'    => $reviews->toArray()['meta'],
+            'data'    => $resourceData['data'],
+            'links'   => $resourceData['links'],
+            'meta'    => $resourceData['meta'],
         ]);
     }
 
