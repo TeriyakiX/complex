@@ -93,12 +93,16 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
 
             Route::prefix('products')->group(function () {
+                Route::get('/', [ProductController::class, 'index']);
+                Route::get('/{product}', [ProductController::class, 'show']);
                 Route::post('/', [ProductController::class, 'store']);
                 Route::put('/{product}', [ProductController::class, 'update']);
                 Route::delete('/{product}', [ProductController::class, 'destroy']);
             });
 
             Route::prefix('manufacturers')->group(function () {
+                Route::get('/', [ManufacturerController::class, 'index']);
+                Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
                 Route::post('/', [ManufacturerController::class, 'store']);
                 Route::put('/{manufacturer}', [ManufacturerController::class, 'update']);
                 Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy']);

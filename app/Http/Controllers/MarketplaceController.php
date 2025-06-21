@@ -10,7 +10,7 @@ class MarketplaceController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 15);
+        $perPage = $request->query('per_page', 10);
 
         $marketplaces = Marketplace::paginate($perPage);
 

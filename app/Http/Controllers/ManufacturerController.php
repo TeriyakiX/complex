@@ -13,7 +13,7 @@ class ManufacturerController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 15);
+        $perPage = $request->query('per_page', 10);
         $search = $request->query('query');
 
         $manufacturers = Manufacturer::withCount('products')
