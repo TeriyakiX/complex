@@ -88,8 +88,8 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     Route::prefix('admin')->group(function () {
 
         Route::middleware('can:is-admin')->group(function () {
-            Route::post('/reviews/{review}/approve', [ReviewController::class, 'approve']); // Одобрение отзыва
-            Route::get('/reviews', [ReviewController::class, 'all']);// Все отзывы (админ)
+            Route::put('/reviews/{review}/{status}', [ReviewController::class, 'changeStatus']);
+            Route::get('/reviews', [ReviewController::class, 'all']);
 
 
             Route::prefix('products')->group(function () {

@@ -61,10 +61,16 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function approve(Review $review)
+    public function changeStatus(Review $review, $status)
     {
-        $review->update(['status' => 'approved']);
+        if ($status === 'approve') {
+            $review->update(['status' => 'approved']);
+            return response()->json(['message' => 'Отзыв одобрен']);
+        } elseif ($status === 'reject') {
+            $review->delete();
+            return response()->json(['message' => 'Отзыв отклонен и удален']);
+        }
 
-        return response()->json(['message' => 'Отзыв одобрен']);
+        return response()->json(['message' => 'Неверный статус'], 400);
     }
 }
