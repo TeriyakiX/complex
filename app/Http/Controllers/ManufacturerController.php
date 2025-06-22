@@ -47,11 +47,9 @@ class ManufacturerController extends Controller
 
         return response()->json([
             'message' => 'Данные производителя',
-            'data' => [
-                'manufacturer' => new ManufacturerResource($manufacturer),
-            ],
-            'links' => $productsData['links'],    // ссылки пагинации по продуктам
-            'meta' => $productsData['meta'],      // мета инфо пагинации по продуктам
+            'data' => new ManufacturerResource($manufacturer),
+            'links' => $productsData['links'],
+            'meta' => $productsData['meta'],
         ]);
     }
     public function store(ManufacturerRequest $request)
