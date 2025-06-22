@@ -14,7 +14,7 @@ class ManufacturerController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 15);
-        $search = $request->query('query');
+        $search = $request->query('search');
 
         $manufacturers = Manufacturer::withCount('products')
             ->when($search, function ($query) use ($search) {
