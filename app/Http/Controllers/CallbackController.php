@@ -53,9 +53,11 @@ class CallbackController extends Controller
 
     public function store(CallbackRequest $request)
     {
-        $callback = Callback::create($request->validated());
+        $data = $request->validated();
+        $data['status'] = 'pending';
 
-        // Отправка email после создания заявки
+        $callback = Callback::create($data);
+
         Mail::to(['info@ekbcomplex.ru', 'marketing@ekbcomplex.ru'])->send(new CallbackMail($callback));
 
         return response()->json([

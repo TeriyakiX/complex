@@ -9,5 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 class Callback extends Model
 {
     use HasUuid;
-    protected $fillable = ['name', 'phone', 'text','agree'];
+    protected $fillable = ['name', 'phone', 'text','agree', 'status'];
+
+    protected $attributes = [
+        'status' => 'pending',
+    ];
 }
