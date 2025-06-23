@@ -109,6 +109,15 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::post('/import', [ImportManufacturerController::class, 'import']);
             });
 
+            Route::prefix('marketplaces')->group(function () {
+                Route::get('/', [MarketplaceController::class, 'index']);
+                Route::get('/{marketplace}', [MarketplaceController::class, 'show']);
+                Route::post('/', [MarketplaceController::class, 'store']);
+                Route::put('/{marketplace}', [MarketplaceController::class, 'update']);
+                Route::delete('/{marketplace}', [MarketplaceController::class, 'destroy']);
+                Route::post('/import', [MarketplaceImportController::class, 'import']);
+            });
+
             Route::prefix('callback')->group(function () {
                 Route::get('/', [CallbackController::class, 'index']);
                 Route::get('/{id}', [CallbackController::class, 'show']);
@@ -116,9 +125,6 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::put('/{id}/{status}', [CallbackController::class, 'updateStatus']);
             });
 
-
-
-            Route::post('/marketplaces/import', [MarketplaceImportController::class, 'import']);
             Route::get('/stats', [AdminStatsController::class, 'index']);
 
         });

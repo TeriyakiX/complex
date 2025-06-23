@@ -18,7 +18,7 @@ class AdminStatsController extends Controller
                 'users_total'       => User::count(),
                 'reviews_approved'  => Review::where('status', 'approved')->count(),
                 'reviews_pending'   => Review::where('status', 'pending')->count(),
-                'callbacks_pending' => Callback::where('status', 'pending')->count(), // Добавляем количество заявок в ожидании
+                'callbacks_pending' => Callback::where('status', 'pending')->count(),
             ],
         ];
     }
