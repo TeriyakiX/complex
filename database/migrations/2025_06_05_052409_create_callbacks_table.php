@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('phone');
             $table->text('text')->nullable();
             $table->boolean('agree')->default(false);
+            $table->enum('status', ['pending', 'reject', 'completed'])->default('pending');
             $table->timestamps();
         });
     }

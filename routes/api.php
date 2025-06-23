@@ -109,9 +109,18 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::post('/import', [ImportManufacturerController::class, 'import']);
             });
 
+            Route::prefix('callback')->group(function () {
+                Route::get('/', [CallbackController::class, 'index']);
+                Route::get('/{id}', [CallbackController::class, 'show']);
+                Route::delete('/{id}', [CallbackController::class, 'destroy']);
+                Route::put('/{id}/{status}', [CallbackController::class, 'updateStatus']);
+            });
+
+
 
             Route::post('/marketplaces/import', [MarketplaceImportController::class, 'import']);
             Route::get('/stats', [AdminStatsController::class, 'index']);
+
         });
 
 

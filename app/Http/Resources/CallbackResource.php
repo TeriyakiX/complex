@@ -20,6 +20,7 @@ class CallbackResource extends JsonResource
             'phone' => $this->phone,
             'text'  => $this->text,
             'agree' => $this->agree,
+            'status' => $this->status,
             'created_at' => $this->created_at->toDateTimeString(),
         ];
     }
