@@ -32,7 +32,6 @@ class ReviewController extends Controller
     {
         $review = Review::create([
             'name'   => $request->name,
-            'email'  => $request->email,
             'text'   => $request->text,
             'rating' => $request->rating,
         ]);

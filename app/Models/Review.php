@@ -10,7 +10,6 @@ class Review extends Model
     use HasUuid;
     protected $fillable = [
         'name',
-        'email',
         'text',
         'rating',
         'status',
