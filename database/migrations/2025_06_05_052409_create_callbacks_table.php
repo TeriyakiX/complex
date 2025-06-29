@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('phone');
+            $table->string('email');
             $table->text('text')->nullable();
             $table->boolean('agree')->default(false);
             $table->enum('status', ['pending', 'reject', 'completed'])->default('pending');

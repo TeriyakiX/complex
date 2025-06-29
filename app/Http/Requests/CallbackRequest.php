@@ -17,8 +17,9 @@ class CallbackRequest extends FormRequest
     {
         return [
             'name'  => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'text' => ['nullable', 'string'],
+            'email'  => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'text'  => 'required|string|min:10|max:1000',
             'agree' => 'required|boolean|in:1',
         ];
     }

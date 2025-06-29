@@ -31,8 +31,9 @@ class ReviewController extends Controller
     public function store(StoreReviewRequest $request)
     {
         $review = Review::create([
-            'user_id' => Auth::id(),
-            'text'    => $request->text,
+            'name'   => $request->name,
+            'email'  => $request->email,
+            'text'   => $request->text,
             'rating' => $request->rating,
         ]);
 

@@ -16,6 +16,8 @@ class StoreReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name'   => 'required|string|max:255',
+            'email'  => 'required|email|max:255',
             'text' => 'required|string|min:10|max:1000',
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
         ];

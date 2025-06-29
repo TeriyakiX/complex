@@ -46,11 +46,9 @@ Route::prefix('password')->middleware('api')->group(function () {
 | PUBLIC REVIEWS & CALLBACK
 |--------------------------------------------------------------------------
 */
-Route::middleware('api')->group(function () {
-    Route::get('/reviews', [ReviewController::class, 'index']);         // Публичные отзывы
-    Route::post('/callback', [CallbackController::class, 'store']);    // Обратная связь
-});
-
+Route::get('/reviews', [ReviewController::class, 'index']);         // Публичные отзывы
+Route::post('/callback', [CallbackController::class, 'store']);    // Обратная связь
+Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PRODUCTS
@@ -81,7 +79,6 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     | USER REVIEWS
     |--------------------------------------------------------------------------
     */
-    Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
 
 
 

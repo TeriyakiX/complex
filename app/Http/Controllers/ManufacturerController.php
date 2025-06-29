@@ -40,7 +40,6 @@ class ManufacturerController extends Controller
         $perPage = $request->query('per_page', 15);
         $products = $manufacturer->products()->paginate($perPage);
 
-        // Присваиваем products как отношение, чтобы Resource мог загрузить
         $manufacturer->setRelation('products', collect($products->items()));
 
         $productsData = ProductResource::collection($products)->response()->getData(true);

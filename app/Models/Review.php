@@ -9,12 +9,13 @@ class Review extends Model
 {
     use HasUuid;
     protected $fillable = [
-        'user_id',
+        'name',
+        'email',
         'text',
         'rating',
         'status',
     ];
-    
+
     protected $casts = [
         'rating' => 'integer',
     ];

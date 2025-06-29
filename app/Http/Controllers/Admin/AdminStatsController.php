@@ -7,6 +7,7 @@ use App\Models\Callback;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Visit;
 
 class AdminStatsController extends Controller
 {
@@ -19,6 +20,7 @@ class AdminStatsController extends Controller
                 'reviews_approved'  => Review::where('status', 'approved')->count(),
                 'reviews_pending'   => Review::where('status', 'pending')->count(),
                 'callbacks_pending' => Callback::where('status', 'pending')->count(),
+                'visits_total' => Visit::count(),
             ],
         ];
     }
