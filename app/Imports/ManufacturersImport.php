@@ -21,18 +21,17 @@ class ManufacturersImport implements OnEachRow, WithStartRow
 
     public function startRow(): int
     {
-        return 2; // если есть заголовок в первой строке
+        return 2;
     }
 
     public function onRow(Row $row)
     {
-        $rowIndex = $row->getIndex(); // номер текущей строки
+        $rowIndex = $row->getIndex();
         $row = $row->toArray();
 
         $name = $row[0] ?? null;
-
         if (!$name) {
-            return; // пропускаем пустые строки
+            return;
         }
 
         $coordinate = 'B' . $rowIndex;
@@ -44,14 +43,22 @@ class ManufacturersImport implements OnEachRow, WithStartRow
             $imageContents = file_get_contents($drawing->getPath());
             $extension = pathinfo($drawing->getPath(), PATHINFO_EXTENSION);
             $filename = 'manufacturers/' . Str::uuid() . '.' . $extension;
-
             Storage::disk('public')->put($filename, $imageContents);
             $imagePath = $filename;
         }
 
-        Manufacturer::create([
-            'name' => $name,
-            'image' => $imagePath,
-        ]);
+        $manufacturer = Manufacturer::where('name', $name)->first();
+
+        if ($manufacturer) {
+            if ($imagePath !== null) {
+                $manufacturer->image = $imagePath;
+                $manufacturer->save();
+            }
+        } else {
+            Manufacturer::create([
+                'name' => $name,
+                'image' => $imagePath,
+            ]);
+        }
     }
 }

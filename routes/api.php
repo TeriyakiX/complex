@@ -95,6 +95,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::post('/', [ProductController::class, 'store']);
                 Route::put('/{product}', [ProductController::class, 'update']);
                 Route::delete('/{product}', [ProductController::class, 'destroy']);
+                Route::post('/import', [\App\Http\Controllers\Admin\ProductImportController::class, 'import']);
             });
 
             Route::prefix('manufacturers')->group(function () {
