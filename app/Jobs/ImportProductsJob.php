@@ -15,7 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ImportProductsJob implements ShouldQueue
 {
-
+    public $timeout = 3600;
     public function middleware()
     {
         return [new AddUuidToJob()];
