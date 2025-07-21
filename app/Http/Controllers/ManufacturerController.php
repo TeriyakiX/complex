@@ -23,6 +23,7 @@ class ManufacturerController extends Controller
                         $productQuery->where('name', 'like', '%' . $search . '%');
                     });
             })
+            ->withImagePriorityAndSortedName()
             ->paginate($perPage);
 
         $resourceData = ManufacturerResource::collection($manufacturers)->response()->getData(true);

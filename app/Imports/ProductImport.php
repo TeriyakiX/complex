@@ -27,27 +27,19 @@ class ProductImport implements WithMultipleSheets
 
         $manufacturerCache = Manufacturer::pluck('id', 'name')->toArray();
 
-        // Сначала листы с фиксированными производителями
         foreach ($sheetNames as $sheetName) {
-            if (!preg_match('/^лист\d+$/iu', $sheetName)) {
-                $manufacturerId = $manufacturerCache[$sheetName] ?? null;
+            $manufacturerId = $manufacturerCache[$sheetName] ?? null;
 
-                if (!$manufacturerId) {
-                    $manufacturer = Manufacturer::create([
-                        'id' => (string) Str::uuid(),
-                        'name' => $sheetName,
-                    ]);
-                    $manufacturerId = $manufacturer->id;
-                    $manufacturerCache[$sheetName] = $manufacturerId;
-                }
+            if (!$manufacturerId) {
+                $manufacturer = Manufacturer::create([
+                    'id' => (string) Str::uuid(),
+                    'name' => $sheetName,
+                ]);
+                $manufacturerId = $manufacturer->id;
+                $manufacturerCache[$sheetName] = $manufacturerId;
+            }
 
-                $this->sheets[$sheetName] = new FixedManufacturerImport($manufacturerId);
-            }
-        }
-        foreach ($sheetNames as $sheetName) {
-            if (preg_match('/^лист\d+$/iu', $sheetName)) {
-                $this->sheets[$sheetName] = new ProductSheetImport();
-            }
+            $this->sheets[$sheetName] = new FixedManufacturerImport($manufacturerId);
         }
     }
 

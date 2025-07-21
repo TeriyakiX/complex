@@ -17,7 +17,6 @@ class ImportManufacturerController extends Controller
 
         $file = $request->file('file');
 
-        // Загружаем файл через PhpSpreadsheet, чтобы получить рисунки с координатами
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
 
