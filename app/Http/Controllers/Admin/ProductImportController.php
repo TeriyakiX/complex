@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
+use App\Jobs\ImportProductsJob;
+use App\Models\ImportStatus;
 use App\Models\Product;
 use App\Models\Manufacturer;
 use Illuminate\Http\Request;
@@ -15,34 +17,52 @@ class ProductImportController extends Controller
 {
     public function import(Request $request)
     {
+
+        Log::info('QUEUE_CONNECTION: ' . config('queue.default'));
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         try {
             $file = $request->file('file');
-            Log::info('Начало импорта файла: ' . $file->getClientOriginalName());
+            Log::info('Запуск импорта файла: ' . $file->getClientOriginalName());
 
-            $import = new ProductImport($file->getRealPath());
-            Excel::import($import, $file);
+            $fileName = uniqid() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('imports', $fileName);
 
-            foreach ($import->sheets() as $sheetName => $sheetImport) {
-                if (method_exists($sheetImport, 'finalize')) {
-                    $sheetImport->finalize();
-                    Log::info("Лист '{$sheetName}' обработан");
-                }
-            }
-
-            return response()->json([
-                'message' => 'Импорт успешно выполнен'
+            $importStatus = ImportStatus::create([
+                'file_name' => $fileName,
+                'status' => 'pending',
             ]);
-        } catch (\Throwable $e) {
-            Log::error('Ошибка импорта: ' . $e->getMessage());
+
+            ImportProductsJob::dispatch(storage_path("app/{$path}"), $importStatus->id);
 
             return response()->json([
-                'message' => 'Произошла ошибка при импорте файла',
+                'message' => 'Импорт запущен',
+                'import_id' => $importStatus->id,
+            ], 202);
+
+        } catch (\Throwable $e) {
+            Log::error('Ошибка запуска импорта: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Не удалось запустить импорт',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function importStatus($id)
+    {
+        $status = ImportStatus::find($id);
+
+        if (!$status) {
+            return response()->json(['error' => 'Импорт не найден'], 404);
+        }
+
+        return response()->json([
+            'status' => $status->status,
+            'message' => $status->message,
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminStatsController;
+use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\ImportManufacturerController;
 use App\Http\Controllers\MarketplaceController;
 use Illuminate\Support\Facades\Route;
@@ -95,7 +96,8 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::post('/', [ProductController::class, 'store']);
                 Route::put('/{product}', [ProductController::class, 'update']);
                 Route::delete('/{product}', [ProductController::class, 'destroy']);
-                Route::post('/import', [\App\Http\Controllers\Admin\ProductImportController::class, 'import']);
+                Route::post('/import', [ProductImportController::class, 'import']);
+                Route::get('/import/status/{id}', [ProductImportController::class, 'importStatus']);
             });
 
             Route::prefix('manufacturers')->group(function () {

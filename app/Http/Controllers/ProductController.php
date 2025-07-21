@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Jobs\ImportProductsJob;
+use App\Models\ImportStatus;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -56,4 +58,5 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Продукт удалён']);
     }
+
 }
