@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Imports\ProductImport;
+use App\Jobs\Middleware\AddUuidToJob;
 use App\Models\ImportStatus;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,12 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ImportProductsJob implements ShouldQueue
 {
+
+    public function middleware()
+    {
+        return [new AddUuidToJob()];
+    }
+
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $filePath;
