@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jobs', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id(); // bigIncrements('id')
+            $table->uuid('uuid')->unique()->nullable(false);
             $table->string('queue')->index();
             $table->longText('payload');
-            $table->unsignedTinyInteger('attempts');
+            $table->tinyInteger('attempts')->unsigned();
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('import_statuses', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('file_name');
             $table->string('status')->default('pending');
             $table->text('message')->nullable();
