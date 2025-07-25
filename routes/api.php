@@ -66,6 +66,11 @@ Route::prefix('manufacturers')->group(function () {
     Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
 });
 
+Route::prefix('warehouses')->group(function () {
+    Route::get('/', [WarehouseController::class, 'index']);
+    Route::get('/{warehouse}', [WarehouseController::class, 'show']);
+});
+
 Route::prefix('marketplaces')->group(function () {
     Route::get('/', [MarketplaceController::class, 'index']);
 });
@@ -83,19 +88,20 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::prefix('warehouses')->group(function () {
-        Route::get('/', [WarehouseController::class, 'index']);
-        Route::get('/{warehouse}', [WarehouseController::class, 'show']);
-        Route::post('/{warehouse}/upload-image', [WarehouseController::class, 'uploadImage']);
-        Route::post('/{warehouse}/import', [WarehouseController::class, 'import']);
-    });
-
     Route::prefix('admin')->group(function () {
 
         Route::middleware('can:is-admin')->group(function () {
             Route::put('/reviews/{review}/{status}', [ReviewController::class, 'changeStatus']);
             Route::get('/reviews', [ReviewController::class, 'all']);
 
+
+
+            Route::prefix('warehouses')->group(function () {
+                Route::get('/', [WarehouseController::class, 'index']);
+                Route::get('/{warehouse}', [WarehouseController::class, 'show']);
+                Route::post('/{warehouse}/upload-image', [WarehouseController::class, 'uploadImage']);
+                Route::post('/{warehouse}/import', [WarehouseController::class, 'import']);
+            });
 
             Route::prefix('products')->group(function () {
                 Route::get('/', [ProductController::class, 'index']);
