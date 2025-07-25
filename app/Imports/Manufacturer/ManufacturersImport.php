@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Imports;
+namespace App\Imports\Manufacturer;
 
 use App\Models\Manufacturer;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Row;

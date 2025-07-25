@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MarketplaceRequest;
-use App\Http\Resources\MarketplaceResource;
+use App\Http\Resources\Marketplace\MarketplaceResource;
 use App\Models\Marketplace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

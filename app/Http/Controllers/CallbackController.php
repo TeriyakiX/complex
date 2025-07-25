@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CallbackRequest;
-use App\Http\Resources\CallbackResource;
+use App\Http\Resources\Callback\CallbackResource;
 use App\Mail\CallbackMail;
 use App\Models\Callback;
 use App\Services\CallbackStatusService;

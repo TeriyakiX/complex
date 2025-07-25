@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\ImportManufacturerController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehouseProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -81,7 +83,12 @@ Route::middleware(['api', 'auth:api'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-
+    Route::prefix('warehouses')->group(function () {
+        Route::get('/', [WarehouseController::class, 'index']);
+        Route::get('/{warehouse}', [WarehouseController::class, 'show']);
+        Route::post('/{warehouse}/upload-image', [WarehouseController::class, 'uploadImage']);
+        Route::post('/{warehouse}/import', [WarehouseController::class, 'import']);
+    });
 
     Route::prefix('admin')->group(function () {
 
@@ -117,6 +124,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::delete('/{marketplace}', [MarketplaceController::class, 'destroy']);
                 Route::post('/import', [MarketplaceImportController::class, 'import']);
             });
+
 
             Route::prefix('callback')->group(function () {
                 Route::get('/', [CallbackController::class, 'index']);

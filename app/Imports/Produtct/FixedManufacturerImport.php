@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Imports;
+namespace App\Imports\Produtct;
 
-use App\Models\Manufacturer;
 use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
@@ -11,15 +11,12 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Row;
 
-
 class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {
     protected string $manufacturerId;
-
     protected array $batch = [];
-    protected int $batchSize = 10000;
-
-    protected array $existingProductNames = [];
+    protected int $batchSize = 1000;
+    protected array $existingProductNames;
 
     public int $inserted = 0;
     public int $skipped = 0;
@@ -29,13 +26,15 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
         $this->manufacturerId = $manufacturerId;
         $this->existingProductNames = Product::where('manufacturer_id', $manufacturerId)
             ->pluck('name')
+            ->map(fn($name) => mb_strtolower(trim($name)))
             ->toArray();
     }
 
     public function onRow(Row $row): void
     {
         $data = $row->toArray();
-        $name = $data[0] ?? null;
+
+        $name = isset($data[0]) ? trim($data[0]) : null;
         $description = $data[2] ?? null;
 
         if (!$name) {
@@ -43,7 +42,9 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
             return;
         }
 
-        if (in_array($name, $this->existingProductNames)) {
+        $lowerName = mb_strtolower($name);
+
+        if (in_array($lowerName, $this->existingProductNames)) {
             $this->skipped++;
         } else {
             $this->batch[] = [
@@ -55,7 +56,7 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
                 'updated_at' => now(),
             ];
             $this->inserted++;
-            $this->existingProductNames[] = $name;
+            $this->existingProductNames[] = $lowerName;
         }
 
         if (count($this->batch) >= $this->batchSize) {
@@ -66,7 +67,9 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
     protected function flushBatch(): void
     {
         if (!empty($this->batch)) {
-            Product::insert($this->batch);
+            DB::transaction(function () {
+                Product::insert($this->batch);
+            });
             $this->batch = [];
         }
     }
@@ -74,7 +77,7 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
     public function finalize(): void
     {
         $this->flushBatch();
-        Log::info("Лист обработан. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
+        Log::info("Лист {$this->manufacturerId} обработан. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
     }
 
     public function chunkSize(): int

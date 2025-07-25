@@ -1,22 +1,16 @@
 <?php
 
-namespace App\Imports;
+namespace App\Imports\Produtct;
 
-use App\Models\Product;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use App\Models\Manufacturer;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class ProductImport implements WithMultipleSheets
 {
     protected array $sheets = [];
+    protected array $importers = [];
 
     public function __construct($filePath)
     {
@@ -39,12 +33,21 @@ class ProductImport implements WithMultipleSheets
                 $manufacturerCache[$sheetName] = $manufacturerId;
             }
 
-            $this->sheets[$sheetName] = new FixedManufacturerImport($manufacturerId);
+            $importer = new FixedManufacturerImport($manufacturerId);
+            $this->sheets[$sheetName] = $importer;
+            $this->importers[] = $importer;
         }
     }
 
     public function sheets(): array
     {
         return $this->sheets;
+    }
+
+    public function finalizeAll(): void
+    {
+        foreach ($this->importers as $importer) {
+            $importer->finalize();
+        }
     }
 }

@@ -2,15 +2,15 @@
 
 namespace App\Jobs;
 
-use App\Imports\ProductImport;
+use App\Imports\Produtct\ProductImport;
 use App\Jobs\Middleware\AddUuidToJob;
 use App\Models\ImportStatus;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ImportProductsJob implements ShouldQueue
@@ -41,7 +41,11 @@ class ImportProductsJob implements ShouldQueue
 
         try {
             Log::info("Start import from: {$this->filePath}");
-            Excel::import(new ProductImport($this->filePath), $this->filePath);
+
+            $import = new ProductImport($this->filePath);
+            Excel::import($import, $this->filePath);
+            $import->finalizeAll();
+
             Log::info("Import complete from: {$this->filePath}");
 
             if ($status) {

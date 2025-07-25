@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Imports;
+namespace App\Imports\Produtct;
 
-use App\Models\Product;
 use App\Models\Manufacturer;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Row;
-use Maatwebsite\Excel\Concerns\OnEachRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Row;
 
 class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {

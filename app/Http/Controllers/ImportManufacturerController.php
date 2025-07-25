@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\Manufacturer\ManufacturersImport;
 use Illuminate\Http\Request;
-use App\Imports\ManufacturersImport;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 

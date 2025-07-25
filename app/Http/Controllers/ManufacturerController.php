@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ManufacturerRequest;
-use App\Http\Resources\ManufacturerResource;
-use App\Http\Resources\ProductResource;
+use App\Http\Resources\Manufacturer\ManufacturerResource;
+use App\Http\Resources\Product\ProductResource;
 use App\Models\Manufacturer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
