@@ -21,4 +21,5 @@ class WarehouseProduct extends Model
     {
         return $this->belongsTo(Manufacturer::class);
     }
+
 }

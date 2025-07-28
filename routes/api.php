@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\ImportManufacturerController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseProductController;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,10 @@ Route::prefix('marketplaces')->group(function () {
     Route::get('/', [MarketplaceController::class, 'index']);
 });
 
+Route::prefix('orders')->group(function () {
+    Route::post('/', [OrderController::class, 'store']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | AUTH-ONLY ROUTES
@@ -94,7 +99,12 @@ Route::middleware(['api', 'auth:api'])->group(function () {
             Route::put('/reviews/{review}/{status}', [ReviewController::class, 'changeStatus']);
             Route::get('/reviews', [ReviewController::class, 'all']);
 
-
+            Route::prefix('orders')->group(function () {
+                Route::get('/', [OrderController::class, 'index']);
+                Route::post('/', [OrderController::class, 'store']);
+                Route::get('/{order}', [OrderController::class, 'show']);
+                Route::put('/{order}/status', [OrderController::class, 'updateStatus']);
+            });
 
             Route::prefix('warehouses')->group(function () {
                 Route::get('/', [WarehouseController::class, 'index']);

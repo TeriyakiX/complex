@@ -32,10 +32,10 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
 
     public function onRow(Row $row): void
     {
-        $data = $row->toArray();
+        $data = array_values($row->toArray());
 
         $name = isset($data[0]) ? trim($data[0]) : null;
-        $description = $data[2] ?? null;
+        $description = isset($data[2]) ? trim($data[2]) : null;
 
         if (!$name) {
             $this->skipped++;

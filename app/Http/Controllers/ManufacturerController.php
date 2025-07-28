@@ -6,33 +6,26 @@ use App\Http\Requests\ManufacturerRequest;
 use App\Http\Resources\Manufacturer\ManufacturerResource;
 use App\Http\Resources\Product\ProductResource;
 use App\Models\Manufacturer;
+use App\Models\Product;
+use App\Services\Search\ManufacturerSearchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ManufacturerController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ManufacturerSearchService $searchService)
     {
-        $perPage = $request->query('per_page', 15);
         $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', 15);
 
-        $manufacturers = Manufacturer::withCount('products')
-            ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhereHas('products', function ($productQuery) use ($search) {
-                        $productQuery->where('name', 'like', '%' . $search . '%');
-                    });
-            })
-            ->withImagePriorityAndSortedName()
-            ->paginate($perPage);
-
-        $resourceData = ManufacturerResource::collection($manufacturers)->response()->getData(true);
+        $result = $searchService->search($search, $perPage);
 
         return response()->json([
-            'message' => 'Список производителей',
-            'data'    => $resourceData['data'],
-            'links'   => $resourceData['links'],
-            'meta'    => $resourceData['meta'],
+            'message' => $result->message,
+            'type' => $result->type,
+            'data' => $result->data,
+            'links' => $result->links,
+            'meta' => $result->meta,
         ]);
     }
 

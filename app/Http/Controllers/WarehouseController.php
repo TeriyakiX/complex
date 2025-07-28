@@ -2,31 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Product\ProductResource;
 use App\Http\Resources\Warehouse\WarehouseProductResource;
 use App\Http\Resources\Warehouse\WarehouseResource;
 use App\Imports\Warehouse\WarehouseProductImport;
+use App\Models\Product;
 use App\Models\Warehouse;
+use App\Models\WarehouseProduct;
+use App\Services\Search\WarehouseSearchService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class WarehouseController extends Controller
 {
+    protected WarehouseSearchService $warehouseService;
+
+    public function __construct(WarehouseSearchService $warehouseSearchService)
+    {
+        $this->warehouseSearchService = $warehouseSearchService;
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 15);
+        $search = $request->query('search');
 
-        $warehouses = Warehouse::withCount('products')->paginate($perPage);
+        if ($search) {
+            $result = $this->warehouseSearchService->search($search, $perPage);
+            return response()->json($result);
+        }
 
-        $resourceData = WarehouseResource::collection($warehouses)
-            ->response()
-            ->getData(true);
-
-        return response()->json([
-            'message' => 'Список складов',
-            'data'    => $resourceData['data'],
-            'links'   => $resourceData['links'],
-            'meta'    => $resourceData['meta'],
-        ]);
+        $result = $this->warehouseSearchService->getAllWithProductCount($perPage);
+        return response()->json($result);
     }
 
     public function show(Request $request, Warehouse $warehouse)
