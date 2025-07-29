@@ -10,18 +10,21 @@ use App\Http\Resources\Product\ProductResource;
 use App\Models\WarehouseProduct;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\DTO\SearchResultDTO;
+use Illuminate\Support\Facades\DB;
 
 class ManufacturerSearchService
 {
     public function search(?string $search, int $perPage = 15): SearchResultDTO
     {
         if ($search) {
-            // 1. Поиск производителей
             $manufacturerQuery = Manufacturer::where('name', 'like', "%{$search}%");
             $manufacturerCount = $manufacturerQuery->count();
 
             if ($manufacturerCount > 0) {
-                $paginated = $manufacturerQuery->withCount('products')->paginate($perPage);
+                $paginated = $manufacturerQuery
+                    ->withCount(['products', 'warehouseProducts'])
+                    ->paginate($perPage);
+
                 $resource = ManufacturerResource::collection($paginated)
                     ->response()
                     ->getData(true);
@@ -35,7 +38,6 @@ class ManufacturerSearchService
                 );
             }
 
-            // 2. Поиск продуктов
             $productQuery = Product::with('manufacturer')
                 ->where('name', 'like', "%{$search}%");
 
@@ -56,7 +58,6 @@ class ManufacturerSearchService
                 );
             }
 
-            // 3. Поиск по складам
             $warehouseProductQuery = WarehouseProduct::with(['manufacturer', 'warehouse'])
                 ->where('name', 'like', "%{$search}%");
 
@@ -87,8 +88,11 @@ class ManufacturerSearchService
             );
         }
 
-        // Без запроса — список производителей
-        $paginated = Manufacturer::withCount('products')->paginate($perPage);
+        $query = Manufacturer::withCount(['products', 'warehouseProducts'])
+            ->orderByDesc(DB::raw('(COALESCE(products_count, 0) + COALESCE(warehouse_products_count, 0))'));
+
+        $paginated = $query->paginate($perPage);
+
         $resource = ManufacturerResource::collection($paginated)
             ->response()
             ->getData(true);

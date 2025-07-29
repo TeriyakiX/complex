@@ -16,11 +16,12 @@ class ManufacturerResource extends JsonResource
                 ? asset('storage/' . $this->image)
                 : null,
 
-            // только если загружено products
             'products' => ProductResource::collection($this->whenLoaded('products')),
 
             // только если есть подсчёт продуктов
-            'products_count' => $this->when(isset($this->products_count), $this->products_count),
+            'products_count' => $this->products_count,
+            'warehouse_products_count' => $this->warehouse_products_count,
+            'total_products_count' => $this->total_products_count,
         ];
     }
 }
