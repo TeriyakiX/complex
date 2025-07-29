@@ -16,6 +16,10 @@ class Manufacturer extends Model
     {
         return $this->hasMany(Product::class);
     }
+    public function warehouseProducts()
+    {
+        return $this->hasMany(WarehouseProduct::class);
+    }
 
     public function scopeWithImagePriorityAndSortedName($query)
     {
