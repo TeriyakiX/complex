@@ -72,6 +72,10 @@ Route::prefix('warehouses')->group(function () {
     Route::get('/{warehouse}', [WarehouseController::class, 'show']);
 });
 
+Route::prefix('warehouses-products')->group(function () {
+    Route::get('/{warehouseProduct}', [WarehouseProductController::class, 'show']);
+});
+
 Route::prefix('marketplaces')->group(function () {
     Route::get('/', [MarketplaceController::class, 'index']);
 });
@@ -101,9 +105,8 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
             Route::prefix('orders')->group(function () {
                 Route::get('/', [OrderController::class, 'index']);
-                Route::post('/', [OrderController::class, 'store']);
                 Route::get('/{order}', [OrderController::class, 'show']);
-                Route::put('/{order}/status', [OrderController::class, 'updateStatus']);
+                Route::put('/{order}/status/{status}', [OrderController::class, 'updateStatus']);
             });
 
             Route::prefix('warehouses')->group(function () {

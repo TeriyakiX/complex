@@ -26,7 +26,10 @@ class OrderController extends Controller
     {
         $order = Order::create($request->validated());
 
-        return new OrderResource($order);
+        return response()->json([
+            'message' => 'Заказ успешно создан',
+            'data' => new OrderResource($order),
+        ]);
     }
 
     public function show(Order $order)
@@ -35,9 +38,9 @@ class OrderController extends Controller
         return new OrderResource($order);
     }
 
-    public function updateStatus(UpdateOrderStatusRequest $request, Order $order)
+    public function updateStatus(Order $order, string $status)
     {
-        $order->update(['status' => $request->input('status')]);
+        $order->update(['status' => $status]);
 
         return new OrderResource($order);
     }

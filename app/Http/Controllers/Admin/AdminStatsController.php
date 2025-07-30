@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Callback;
+use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class AdminStatsController extends Controller
                 'reviews_approved'  => Review::where('status', 'approved')->count(),
                 'reviews_pending'   => Review::where('status', 'pending')->count(),
                 'callbacks_pending' => Callback::where('status', 'pending')->count(),
+                'orders_new'        => Order::where('status', 'new')->count(),
                 'visits_total' => Visit::count(),
             ],
         ];

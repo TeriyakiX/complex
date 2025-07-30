@@ -14,6 +14,9 @@ class WarehouseProductResource extends JsonResource
             'manufacturer_id' => $this->manufacturer_id,
             'manufacturer_name' => $this->manufacturer->name ?? null,
             'stock' => $this->stock,
+            'warehouse_image' => $this->warehouse && $this->warehouse->image
+                ? asset('storage/' . $this->warehouse->image)
+                : null,
             'created_at' => $this->created_at->toDateTimeString(),
         ];
     }
