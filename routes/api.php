@@ -106,7 +106,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
             Route::prefix('orders')->group(function () {
                 Route::get('/', [OrderController::class, 'index']);
                 Route::get('/{order}', [OrderController::class, 'show']);
-                Route::put('/{order}/status/{status}', [OrderController::class, 'updateStatus']);
+                Route::put('/{order}/{status}', [OrderController::class, 'updateStatus']);
             });
 
             Route::prefix('warehouses')->group(function () {
