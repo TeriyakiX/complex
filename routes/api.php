@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseProductController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -85,14 +86,20 @@ Route::prefix('orders')->group(function () {
     Route::post('/', [OrderController::class, 'store']);
 });
 
-Route::get('/sitemap.xml', function (Request $request) {
-    $response = response()->file(public_path('sitemaps/sitemap-index.xml'));
+Route::get('/sitemap.xml', function () {
+    $apiUrl = 'https://api.ekbcomplex.ru/sitemaps/sitemap-index.xml';
 
-    $response->headers->set('Access-Control-Allow-Origin', '*');
-    $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    $response = Http::get($apiUrl);
 
-    return $response;
+    if ($response->ok()) {
+        $content = $response->body();
+        $content = str_replace('https://api.ekbcomplex.ru', 'https://ekbcomplex.ru', $content);
+
+        return response($content, 200)
+            ->header('Content-Type', 'application/xml');
+    }
+
+    abort(404);
 });
 /*
 |--------------------------------------------------------------------------

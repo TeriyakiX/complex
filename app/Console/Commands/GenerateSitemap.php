@@ -18,7 +18,7 @@ class GenerateSitemap extends Command
 
     public function handle()
     {
-        $baseUrl = 'https://api.ekbcomplex.ru';
+        $baseUrl = 'https://ekbcomplex.ru';
         $basePath = public_path('sitemaps');
 
         if (!is_dir($basePath)) {
