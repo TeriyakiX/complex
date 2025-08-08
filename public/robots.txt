@@ -3,5 +3,5 @@ Allow: /
 
 Disallow: /admin
 
-Sitemap: https://ekbcomplex.ru/sitemaps/sitemap-index.xml
+Sitemap: https://api.ekbcomplex.ru/sitemaps/sitemap-index.xml
 
