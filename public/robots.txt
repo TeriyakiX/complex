@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Allow: /
+
+Disallow: /admin
+
+Sitemap: https://ekbcomplex.ru/sitemaps/sitemap-index.xml
+

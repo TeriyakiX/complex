@@ -84,6 +84,9 @@ Route::prefix('orders')->group(function () {
     Route::post('/', [OrderController::class, 'store']);
 });
 
+Route::get('/sitemap.xml', function () {
+    return response()->file(public_path('sitemaps/sitemap-index.xml'));
+});
 /*
 |--------------------------------------------------------------------------
 | AUTH-ONLY ROUTES
