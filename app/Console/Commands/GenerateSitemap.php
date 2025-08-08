@@ -14,7 +14,7 @@ class GenerateSitemap extends Command
     protected $signature = 'sitemap:generate
                             {--chunk=20000 : Number of records per sitemap file (tune for performance)}';
 
-    protected $description = 'Generate sitemap files (splitted & gzipped) and sitemap-index.xml';
+    protected $description = 'Generate sitemap files (splitted) and sitemap-index.xml';
 
     public function handle()
     {
@@ -34,8 +34,8 @@ class GenerateSitemap extends Command
          * 1) Static pages
          */
         $this->info('Writing static sitemap file...');
-        $staticName = 'sitemap-static.xml.gz';
-        $this->writeGzXml(function (XMLWriter $xml) use ($baseUrl) {
+        $staticName = 'sitemap-static.xml';
+        $this->writeXml(function (XMLWriter $xml) use ($baseUrl) {
             $now = now()->toAtomString();
 
             $this->writeUrl($xml, $baseUrl . '/', $now, 'daily', '1.0');
@@ -59,10 +59,10 @@ class GenerateSitemap extends Command
         Product::select(['id', 'updated_at'])
             ->chunkById($chunkSize, function ($products) use (&$productChunk, &$files, $basePath, $baseUrl) {
                 $productChunk++;
-                $filename = "sitemap-products-{$productChunk}.xml.gz";
+                $filename = "sitemap-products-{$productChunk}.xml";
                 $path = $basePath . '/' . $filename;
 
-                $this->writeGzXml(function (XMLWriter $xml) use ($products, $baseUrl) {
+                $this->writeXml(function (XMLWriter $xml) use ($products, $baseUrl) {
                     foreach ($products as $product) {
                         $loc = $baseUrl . '/products/' . $product->id;
                         $this->writeUrl($xml, $loc, optional($product->updated_at)->toAtomString(), 'weekly', '0.8');
@@ -81,9 +81,9 @@ class GenerateSitemap extends Command
         Manufacturer::select(['id', 'updated_at'])
             ->chunkById(5000, function ($manufacturers) use (&$manChunk, &$files, $basePath, $baseUrl) {
                 $manChunk++;
-                $filename = "sitemap-manufacturers-{$manChunk}.xml.gz";
+                $filename = "sitemap-manufacturers-{$manChunk}.xml";
                 $path = $basePath . '/' . $filename;
-                $this->writeGzXml(function (XMLWriter $xml) use ($manufacturers, $baseUrl) {
+                $this->writeXml(function (XMLWriter $xml) use ($manufacturers, $baseUrl) {
                     foreach ($manufacturers as $manufacturer) {
                         $loc = $baseUrl . '/manufacturers/' . $manufacturer->id;
                         $this->writeUrl($xml, $loc, optional($manufacturer->updated_at)->toAtomString(), 'weekly', '0.6');
@@ -101,9 +101,9 @@ class GenerateSitemap extends Command
         Warehouse::select(['id', 'updated_at'])
             ->chunkById(5000, function ($warehouses) use (&$whChunk, &$files, $basePath, $baseUrl) {
                 $whChunk++;
-                $filename = "sitemap-warehouses-{$whChunk}.xml.gz";
+                $filename = "sitemap-warehouses-{$whChunk}.xml";
                 $path = $basePath . '/' . $filename;
-                $this->writeGzXml(function (XMLWriter $xml) use ($warehouses, $baseUrl) {
+                $this->writeXml(function (XMLWriter $xml) use ($warehouses, $baseUrl) {
                     foreach ($warehouses as $warehouse) {
                         $loc = $baseUrl . '/warehouses/' . $warehouse->id;
                         $this->writeUrl($xml, $loc, optional($warehouse->updated_at)->toAtomString(), 'weekly', '0.6');
@@ -121,9 +121,9 @@ class GenerateSitemap extends Command
         WarehouseProduct::select(['id', 'updated_at'])
             ->chunkById(10000, function ($warehouseProducts) use (&$wpChunk, &$files, $basePath, $baseUrl) {
                 $wpChunk++;
-                $filename = "sitemap-warehouse-products-{$wpChunk}.xml.gz";
+                $filename = "sitemap-warehouse-products-{$wpChunk}.xml";
                 $path = $basePath . '/' . $filename;
-                $this->writeGzXml(function (XMLWriter $xml) use ($warehouseProducts, $baseUrl) {
+                $this->writeXml(function (XMLWriter $xml) use ($warehouseProducts, $baseUrl) {
                     foreach ($warehouseProducts as $wp) {
                         $loc = $baseUrl . '/warehouses-products/' . $wp->id;
                         $this->writeUrl($xml, $loc, optional($wp->updated_at)->toAtomString(), 'weekly', '0.7');
@@ -175,7 +175,7 @@ class GenerateSitemap extends Command
         $xml->endElement();
     }
 
-    protected function writeGzXml(callable $callback, string $filePath)
+    protected function writeXml(callable $callback, string $filePath)
     {
         $xml = new XMLWriter();
         $xml->openMemory();
@@ -188,12 +188,6 @@ class GenerateSitemap extends Command
         $xml->endElement();
         $xml->endDocument();
 
-        $gz = gzopen($filePath, 'w9');
-        if ($gz === false) {
-            $this->error("Unable to write gz: {$filePath}");
-            return;
-        }
-        gzwrite($gz, $xml->outputMemory());
-        gzclose($gz);
+        file_put_contents($filePath, $xml->outputMemory());
     }
 }

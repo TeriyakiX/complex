@@ -88,7 +88,6 @@ Route::prefix('orders')->group(function () {
 Route::get('/sitemap.xml', function (Request $request) {
     $response = response()->file(public_path('sitemaps/sitemap-index.xml'));
 
-    // Добавляем заголовки CORS
     $response->headers->set('Access-Control-Allow-Origin', '*');
     $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
