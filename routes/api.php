@@ -7,6 +7,7 @@ use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseProductController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -84,8 +85,13 @@ Route::prefix('orders')->group(function () {
     Route::post('/', [OrderController::class, 'store']);
 });
 
-Route::get('/sitemap.xml', function () {
-    return response()->file(public_path('sitemaps/sitemap-index.xml'));
+Route::get('/sitemap.xml', function (Request $request) {
+    $response = response()->file(public_path('sitemaps/sitemap-index.xml'));
+    $response->header('Access-Control-Allow-Origin', '*');
+    $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    return $response;
 });
 /*
 |--------------------------------------------------------------------------
