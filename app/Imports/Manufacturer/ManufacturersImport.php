@@ -12,9 +12,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class ManufacturersImport implements OnEachRow, WithStartRow
 {
-    private $drawingsByCoordinate;
+    private array $drawingsByCoordinate;
 
-    public function __construct(array $drawingsByCoordinate)
+    public function __construct(array $drawingsByCoordinate = [])
     {
         $this->drawingsByCoordinate = $drawingsByCoordinate;
     }
@@ -30,35 +30,45 @@ class ManufacturersImport implements OnEachRow, WithStartRow
         $row = $row->toArray();
 
         $name = $row[0] ?? null;
-        if (!$name) {
-            return;
-        }
+        if (!$name) return;
 
-        $coordinate = 'B' . $rowIndex;
+        $description = null;
         $imagePath = null;
 
-        if (isset($this->drawingsByCoordinate[$coordinate])) {
-            /** @var Drawing $drawing */
-            $drawing = $this->drawingsByCoordinate[$coordinate];
+        // Проверяем сначала колонку B
+        $coordinateB = 'B' . $rowIndex;
+        $coordinateC = 'C' . $rowIndex;
+
+        if (isset($this->drawingsByCoordinate[$coordinateB])) {
+            $drawing = $this->drawingsByCoordinate[$coordinateB];
+        } elseif (isset($this->drawingsByCoordinate[$coordinateC])) {
+            $drawing = $this->drawingsByCoordinate[$coordinateC];
+        } else {
+            $drawing = null;
+        }
+
+        if ($drawing instanceof Drawing) {
             $imageContents = file_get_contents($drawing->getPath());
             $extension = pathinfo($drawing->getPath(), PATHINFO_EXTENSION);
             $filename = 'manufacturers/' . Str::uuid() . '.' . $extension;
             Storage::disk('public')->put($filename, $imageContents);
             $imagePath = $filename;
-        }
-
-        $manufacturer = Manufacturer::where('name', $name)->first();
-
-        if ($manufacturer) {
-            if ($imagePath !== null) {
-                $manufacturer->image = $imagePath;
-                $manufacturer->save();
-            }
         } else {
-            Manufacturer::create([
-                'name' => $name,
-                'image' => $imagePath,
-            ]);
+            // Если рисунка нет, берем текст из B или C как описание
+            $description = $row[1] ?? $row[2] ?? null;
         }
+
+        // Обновляем или создаем производителя
+        $manufacturer = Manufacturer::firstOrNew(['name' => $name]);
+
+        if ($description !== null) {
+            $manufacturer->description = $description;
+        }
+
+        if ($imagePath !== null) {
+            $manufacturer->image = $imagePath;
+        }
+
+        $manufacturer->save();
     }
 }

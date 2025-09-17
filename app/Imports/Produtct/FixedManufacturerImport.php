@@ -47,14 +47,21 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
         if (in_array($lowerName, $this->existingProductNames)) {
             $this->skipped++;
         } else {
+            $id = (string) Str::uuid();
+            // Генерация slug: name + description + первые 8 символов UUID
+            $slugBase = $name . ' ' . ($description ?? '');
+            $slug = Str::slug($slugBase . '-' . substr($id, 0, 8));
+
             $this->batch[] = [
-                'id' => (string) Str::uuid(),
+                'id' => $id,
                 'name' => $name,
                 'description' => $description,
                 'manufacturer_id' => $this->manufacturerId,
+                'slug' => $slug,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
             $this->inserted++;
             $this->existingProductNames[] = $lowerName;
         }

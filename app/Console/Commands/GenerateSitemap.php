@@ -12,7 +12,7 @@ use XMLWriter;
 class GenerateSitemap extends Command
 {
     protected $signature = 'sitemap:generate
-                            {--chunk=20000 : Number of records per sitemap file (tune for performance)}';
+                            {--chunk=5000 : Number of records per sitemap file (tune for performance)}';
 
     protected $description = 'Generate sitemap files (splitted) and sitemap-index.xml';
 
@@ -28,7 +28,7 @@ class GenerateSitemap extends Command
         $this->info('Sitemap generation started...');
         $files = [];
 
-        $chunkSize = (int) $this->option('chunk') ?: 20000;
+        $chunkSize = (int) $this->option('chunk') ?: 5000;
 
         /**
          * 1) Static pages
@@ -52,19 +52,20 @@ class GenerateSitemap extends Command
         $files[] = $staticName;
 
         /**
-         * 2) Products (id)
+         * 2) Products (slug)
          */
         $this->info('Writing products sitemaps...');
         $productChunk = 0;
-        Product::select(['id', 'updated_at'])
-            ->chunkById($chunkSize, function ($products) use (&$productChunk, &$files, $basePath, $baseUrl) {
+        Product::select(['slug', 'updated_at'])
+            ->orderBy('created_at')
+            ->chunk($chunkSize, function ($products) use (&$productChunk, &$files, $basePath, $baseUrl) {
                 $productChunk++;
                 $filename = "sitemap-products-{$productChunk}.xml";
                 $path = $basePath . '/' . $filename;
 
                 $this->writeXml(function (XMLWriter $xml) use ($products, $baseUrl) {
                     foreach ($products as $product) {
-                        $loc = $baseUrl . '/products/' . $product->id;
+                        $loc = $baseUrl . '/products/' . $product->slug;
                         $this->writeUrl($xml, $loc, optional($product->updated_at)->toAtomString(), 'weekly', '0.8');
                     }
                 }, $path);

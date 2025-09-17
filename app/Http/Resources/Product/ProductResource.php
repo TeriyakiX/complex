@@ -12,6 +12,7 @@ class ProductResource extends JsonResource
             'id'          => $this->id,
             'name'        => $this->name,
             'description' => $this->description,
+            'slug'        => $this->slug,
             'manufacturer_id' => $this->manufacturer_id,
             'created_at'  => $this->created_at->toDateTimeString(),
 

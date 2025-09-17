@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\ImportManufacturerController;
+use App\Http\Controllers\ManufacturerExportController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductExportController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseProductController;
 use Illuminate\Http\Request;
@@ -62,7 +64,7 @@ Route::post('/reviews', [ReviewController::class, 'store']); // Отправит
 */
 Route::prefix('products')->middleware('api')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
-    Route::get('/{product}', [ProductController::class, 'show']);
+    Route::get('/{product:slug}', [ProductController::class, 'show']);
 });
 Route::prefix('manufacturers')->group(function () {
     Route::get('/', [ManufacturerController::class, 'index']);
@@ -135,16 +137,20 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
             Route::prefix('products')->group(function () {
                 Route::get('/', [ProductController::class, 'index']);
-                Route::get('/{product}', [ProductController::class, 'show']);
+                Route::get('/{product:slug}', [ProductController::class, 'show']);
                 Route::post('/', [ProductController::class, 'store']);
                 Route::put('/{product}', [ProductController::class, 'update']);
                 Route::delete('/{product}', [ProductController::class, 'destroy']);
                 Route::post('/import', [ProductImportController::class, 'import']);
                 Route::get('/import/status/{id}', [ProductImportController::class, 'importStatus']);
+
+                Route::post('/export', [ProductExportController::class, 'export']);
+                Route::get('/export/{id}', [ProductExportController::class, 'exportStatus']);
             });
 
             Route::prefix('manufacturers')->group(function () {
                 Route::get('/', [ManufacturerController::class, 'index']);
+                Route::get('/export', [ManufacturerExportController::class, 'export']);
                 Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
                 Route::post('/', [ManufacturerController::class, 'store']);
                 Route::put('/{manufacturer}', [ManufacturerController::class, 'update']);
