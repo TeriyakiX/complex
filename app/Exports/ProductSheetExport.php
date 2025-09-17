@@ -18,13 +18,12 @@ class ProductSheetExport implements FromArray, WithTitle
     public function array(): array
     {
         $data = [];
-
-        // Заголовки
-        $data[] = ['name', 'description'];
+        $data[] = ['name', 'manufacturer', 'description'];
 
         foreach ($this->manufacturer->products as $product) {
             $data[] = [
                 $product->name ?? '',
+                $this->manufacturer->name ?? '',
                 $product->description ?? '',
             ];
         }
