@@ -18,3 +18,5 @@ yarn-error.log
 /.idea
 /.vscode
 public_html
+sitemap*.xml
+sitemaps/

@@ -2,6 +2,7 @@
 
 namespace App\Imports\Produtct;
 
+use App\Models\Manufacturer;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -13,42 +14,64 @@ use Maatwebsite\Excel\Row;
 
 class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {
-    protected string $manufacturerId;
+    protected ?string $manufacturerId = null;
+    protected bool $manufacturerChecked = false;
+
     protected array $batch = [];
     protected int $batchSize = 1000;
-    protected array $existingProductNames;
+    protected array $existingProductNames = [];
 
     public int $inserted = 0;
     public int $skipped = 0;
 
-    public function __construct(string $manufacturerId)
-    {
-        $this->manufacturerId = $manufacturerId;
-        $this->existingProductNames = Product::where('manufacturer_id', $manufacturerId)
-            ->pluck('name')
-            ->map(fn($name) => mb_strtolower(trim($name)))
-            ->toArray();
-    }
-
     public function onRow(Row $row): void
     {
+        $rowIndex = $row->getIndex();
         $data = array_values($row->toArray());
 
-        $name = isset($data[0]) ? trim($data[0]) : null;
-        $description = isset($data[2]) ? trim($data[2]) : null;
+        // Берем производителя из B2 (вторая строка, колонка B)
+        if ($rowIndex === 2 && !$this->manufacturerChecked) {
+            $manufacturerName = isset($data[1]) ? trim($data[1]) : null;
+
+            if (!$manufacturerName) {
+                Log::warning("Не найден производитель в ячейке B2");
+                return;
+            }
+
+            $manufacturer = Manufacturer::firstOrCreate(
+                ['name' => $manufacturerName],
+                ['id' => (string) Str::uuid()]
+            );
+
+            $this->manufacturerId = $manufacturer->id;
+            $this->existingProductNames = Product::where('manufacturer_id', $this->manufacturerId)
+                ->pluck('name')
+                ->map(fn($n) => mb_strtolower(trim($n)))
+                ->toArray();
+
+            $this->manufacturerChecked = true;
+            return; // строку B2 не обрабатываем как продукт
+        }
+
+        // продукты начинаются только после второй строки
+        if ($rowIndex <= 2 || !$this->manufacturerId) {
+            return;
+        }
+
+        $name = $data[0] ?? null;
+        $description = $data[2] ?? null;
 
         if (!$name) {
             $this->skipped++;
             return;
         }
 
-        $lowerName = mb_strtolower($name);
+        $lowerName = mb_strtolower(trim($name));
 
         if (in_array($lowerName, $this->existingProductNames)) {
             $this->skipped++;
         } else {
             $id = (string) Str::uuid();
-            // Генерация slug: name + description + первые 8 символов UUID
             $slugBase = $name . ' ' . ($description ?? '');
             $slug = Str::slug($slugBase . '-' . substr($id, 0, 8));
 
@@ -84,7 +107,7 @@ class FixedManufacturerImport implements OnEachRow, WithChunkReading, SkipsEmpty
     public function finalize(): void
     {
         $this->flushBatch();
-        Log::info("Лист {$this->manufacturerId} обработан. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
+        Log::info("Импорт производителя {$this->manufacturerId} завершён. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
     }
 
     public function chunkSize(): int

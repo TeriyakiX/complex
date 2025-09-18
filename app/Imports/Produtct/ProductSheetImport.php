@@ -14,63 +14,80 @@ use Maatwebsite\Excel\Row;
 
 class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {
-    protected array $manufacturersCache = [];
-    protected ?string $lastManufacturerName = null;
-    protected ?string $lastManufacturerId = null;
+    protected ?string $manufacturerId = null;
+    protected bool $manufacturerChecked = false;
 
     protected array $batch = [];
     protected int $batchSize = 1000;
 
+    protected array $existingProductNames = [];
+
     public int $inserted = 0;
     public int $skipped = 0;
 
-    public function __construct()
-    {
-        $this->manufacturersCache = Manufacturer::pluck('id', 'name')->toArray();
-    }
-
     public function onRow(Row $row): void
     {
-        $data = $row->toArray();
+        $rowIndex = $row->getIndex();
+        $data = array_values($row->toArray());
+
+        // B2 = производитель
+        if ($rowIndex === 2 && !$this->manufacturerChecked) {
+            $manufacturerName = isset($data[1]) ? trim($data[1]) : null;
+
+            if (!$manufacturerName) {
+                Log::warning("Не найден производитель в ячейке B2");
+                return;
+            }
+
+            $manufacturer = Manufacturer::firstOrCreate(
+                ['name' => $manufacturerName],
+                ['id' => (string) Str::uuid()]
+            );
+
+            $this->manufacturerId = $manufacturer->id;
+
+            $this->existingProductNames = Product::where('manufacturer_id', $this->manufacturerId)
+                ->pluck('name')
+                ->map(fn($n) => mb_strtolower(trim($n)))
+                ->toArray();
+
+            $this->manufacturerChecked = true;
+            return; // B2 мы не обрабатываем как товар
+        }
+
+        // товары начинаются только после B2
+        if ($rowIndex <= 2 || !$this->manufacturerId) {
+            return;
+        }
+
         $name = $data[0] ?? null;
-        $manufacturerName = $data[1] ?? null;
         $description = $data[2] ?? null;
 
-        if (!$name || !$manufacturerName) {
+        if (!$name) {
             $this->skipped++;
             return;
         }
 
-        if ($manufacturerName !== $this->lastManufacturerName) {
-            if (!isset($this->manufacturersCache[$manufacturerName])) {
-                $manufacturer = Manufacturer::create([
-                    'id' => (string) Str::uuid(),
-                    'name' => $manufacturerName,
-                ]);
-                $this->manufacturersCache[$manufacturerName] = $manufacturer->id;
-            }
-            $this->lastManufacturerName = $manufacturerName;
-            $this->lastManufacturerId = $this->manufacturersCache[$manufacturerName];
-        }
+        $lowerName = mb_strtolower(trim($name));
 
-        $manufacturerId = $this->lastManufacturerId;
-
-        $exists = Product::where('name', $name)
-            ->where('manufacturer_id', $manufacturerId)
-            ->exists();
-
-        if ($exists) {
+        if (in_array($lowerName, $this->existingProductNames)) {
             $this->skipped++;
         } else {
+            $id = (string) Str::uuid();
+            $slug = Str::slug($name . '-' . substr($id, 0, 8));
+
             $this->batch[] = [
-                'id' => (string) Str::uuid(),
+                'id' => $id,
                 'name' => $name,
                 'description' => $description,
-                'manufacturer_id' => $manufacturerId,
+                'manufacturer_id' => $this->manufacturerId,
+                'slug' => $slug,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
             $this->inserted++;
+            $this->existingProductNames[] = $lowerName;
         }
 
         if (count($this->batch) >= $this->batchSize) {
@@ -91,7 +108,7 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
     public function finalize(): void
     {
         $this->flushBatch();
-        Log::info("Лист обработан. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
+        Log::info("Импорт производителя {$this->manufacturerId} завершён. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
     }
 
     public function chunkSize(): int
@@ -99,5 +116,3 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
         return 1000;
     }
 }
-
-
