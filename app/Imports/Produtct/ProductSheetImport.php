@@ -5,7 +5,6 @@ namespace App\Imports\Produtct;
 use App\Models\Manufacturer;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -14,13 +13,10 @@ use Maatwebsite\Excel\Row;
 
 class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {
-    protected ?string $manufacturerId = null;
-    protected bool $manufacturerChecked = false;
-
     protected array $batch = [];
     protected int $batchSize = 1000;
 
-    protected array $existingProductNames = [];
+    protected array $existingProductsByManufacturer = [];
 
     public int $inserted = 0;
     public int $skipped = 0;
@@ -28,67 +24,62 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
     public function onRow(Row $row): void
     {
         $rowIndex = $row->getIndex();
+        if ($rowIndex < 2) return; // пропускаем заголовки
+
         $data = array_values($row->toArray());
 
-        // B2 = производитель
-        if ($rowIndex === 2 && !$this->manufacturerChecked) {
-            $manufacturerName = isset($data[1]) ? trim($data[1]) : null;
+        $name = isset($data[0]) ? trim((string)$data[0]) : null;
+        $manufacturerName = isset($data[1]) ? trim((string)$data[1]) : null;
+        $description = isset($data[2]) ? trim((string)$data[2]) : null;
 
-            if (!$manufacturerName) {
-                Log::warning("Не найден производитель в ячейке B2");
-                return;
-            }
+        if (!$name || !$manufacturerName) {
+            $this->skipped++;
+            return;
+        }
 
-            $manufacturer = Manufacturer::firstOrCreate(
-                ['name' => $manufacturerName],
-                ['id' => (string) Str::uuid()]
-            );
+        // --- получаем или создаём производителя ---
+        $manufacturer = Manufacturer::firstOrCreate(
+            ['name' => $manufacturerName],
+            ['id' => (string) Str::uuid()]
+        );
+        $manufacturerId = $manufacturer->id;
 
-            $this->manufacturerId = $manufacturer->id;
-
-            $this->existingProductNames = Product::where('manufacturer_id', $this->manufacturerId)
+        // --- кешируем уже существующие продукты этого производителя ---
+        if (!isset($this->existingProductsByManufacturer[$manufacturerId])) {
+            $this->existingProductsByManufacturer[$manufacturerId] = Product::where('manufacturer_id', $manufacturerId)
                 ->pluck('name')
                 ->map(fn($n) => mb_strtolower(trim($n)))
                 ->toArray();
-
-            $this->manufacturerChecked = true;
-            return; // B2 мы не обрабатываем как товар
         }
 
-        // товары начинаются только после B2
-        if ($rowIndex <= 2 || !$this->manufacturerId) {
-            return;
-        }
-
-        $name = $data[0] ?? null;
-        $description = $data[2] ?? null;
-
-        if (!$name) {
+        // --- проверяем продукт ---
+        if (in_array(mb_strtolower($name), $this->existingProductsByManufacturer[$manufacturerId])) {
             $this->skipped++;
             return;
         }
 
-        $lowerName = mb_strtolower(trim($name));
+        // --- добавляем продукт в батч ---
+        $this->addProduct($name, $description, $manufacturerId);
+    }
 
-        if (in_array($lowerName, $this->existingProductNames)) {
-            $this->skipped++;
-        } else {
-            $id = (string) Str::uuid();
-            $slug = Str::slug($name . '-' . substr($id, 0, 8));
+    protected function addProduct(string $name, ?string $description, string $manufacturerId): void
+    {
+        $id = (string) Str::uuid();
+        $slugBase = $name . ' ' . ($description ?? '');
+        $slug = Str::slug($slugBase . '-' . substr($id, 0, 8));
 
-            $this->batch[] = [
-                'id' => $id,
-                'name' => $name,
-                'description' => $description,
-                'manufacturer_id' => $this->manufacturerId,
-                'slug' => $slug,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+        $this->batch[] = [
+            'id' => $id,
+            'name' => $name,
+            'description' => $description,
+            'manufacturer_id' => $manufacturerId,
+            'slug' => $slug,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
 
-            $this->inserted++;
-            $this->existingProductNames[] = $lowerName;
-        }
+        $this->existingProductsByManufacturer[$manufacturerId][] = mb_strtolower($name);
+        $this->inserted++;
 
         if (count($this->batch) >= $this->batchSize) {
             $this->flushBatch();
@@ -108,7 +99,6 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
     public function finalize(): void
     {
         $this->flushBatch();
-        Log::info("Импорт производителя {$this->manufacturerId} завершён. Добавлено: {$this->inserted}, пропущено: {$this->skipped}");
     }
 
     public function chunkSize(): int
