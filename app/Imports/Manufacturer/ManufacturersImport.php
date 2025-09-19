@@ -30,35 +30,25 @@ class ManufacturersImport implements OnEachRow, WithStartRow
         $row = $row->toArray();
 
         $name = $row[0] ?? null;
-        if (!$name) return;
+        if (!$name) {
+            return;
+        }
 
-        $description = null;
+        $description = $row[1] ?? null;
         $imagePath = null;
 
-        // Проверяем сначала колонку B
-        $coordinateB = 'B' . $rowIndex;
         $coordinateC = 'C' . $rowIndex;
-
-        if (isset($this->drawingsByCoordinate[$coordinateB])) {
-            $drawing = $this->drawingsByCoordinate[$coordinateB];
-        } elseif (isset($this->drawingsByCoordinate[$coordinateC])) {
+        if (isset($this->drawingsByCoordinate[$coordinateC])) {
             $drawing = $this->drawingsByCoordinate[$coordinateC];
-        } else {
-            $drawing = null;
+            if ($drawing instanceof Drawing) {
+                $imageContents = file_get_contents($drawing->getPath());
+                $extension = pathinfo($drawing->getPath(), PATHINFO_EXTENSION);
+                $filename = 'manufacturers/' . Str::uuid() . '.' . $extension;
+                Storage::disk('public')->put($filename, $imageContents);
+                $imagePath = $filename;
+            }
         }
 
-        if ($drawing instanceof Drawing) {
-            $imageContents = file_get_contents($drawing->getPath());
-            $extension = pathinfo($drawing->getPath(), PATHINFO_EXTENSION);
-            $filename = 'manufacturers/' . Str::uuid() . '.' . $extension;
-            Storage::disk('public')->put($filename, $imageContents);
-            $imagePath = $filename;
-        } else {
-            // Если рисунка нет, берем текст из B или C как описание
-            $description = $row[1] ?? $row[2] ?? null;
-        }
-
-        // Обновляем или создаем производителя
         $manufacturer = Manufacturer::firstOrNew(['name' => $name]);
 
         if ($description !== null) {
