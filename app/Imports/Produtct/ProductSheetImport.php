@@ -24,7 +24,7 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
     public function onRow(Row $row): void
     {
         $rowIndex = $row->getIndex();
-        if ($rowIndex < 2) return; // пропускаем заголовки
+        if ($rowIndex < 2) return;
 
         $data = array_values($row->toArray());
 
@@ -37,14 +37,12 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
             return;
         }
 
-        // --- получаем или создаём производителя ---
         $manufacturer = Manufacturer::firstOrCreate(
             ['name' => $manufacturerName],
             ['id' => (string) Str::uuid()]
         );
         $manufacturerId = $manufacturer->id;
 
-        // --- кешируем уже существующие продукты этого производителя ---
         if (!isset($this->existingProductsByManufacturer[$manufacturerId])) {
             $this->existingProductsByManufacturer[$manufacturerId] = Product::where('manufacturer_id', $manufacturerId)
                 ->pluck('name')
@@ -52,13 +50,11 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
                 ->toArray();
         }
 
-        // --- проверяем продукт ---
         if (in_array(mb_strtolower($name), $this->existingProductsByManufacturer[$manufacturerId])) {
             $this->skipped++;
             return;
         }
 
-        // --- добавляем продукт в батч ---
         $this->addProduct($name, $description, $manufacturerId);
     }
 
