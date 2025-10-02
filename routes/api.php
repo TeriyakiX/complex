@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\ProductImportController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ImportManufacturerController;
 use App\Http\Controllers\ManufacturerExportController;
 use App\Http\Controllers\MarketplaceController;
@@ -57,6 +58,9 @@ Route::prefix('password')->middleware('api')->group(function () {
 Route::get('/reviews', [ReviewController::class, 'index']);         // Публичные отзывы
 Route::post('/callback', [CallbackController::class, 'store']);    // Обратная связь
 Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
+
+Route::get('/documents', [DocumentController::class, 'index']);
+Route::get('/documents/{filename}', [DocumentController::class, 'show']);
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PRODUCTS

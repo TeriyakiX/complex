@@ -14,7 +14,7 @@ use Maatwebsite\Excel\Row;
 class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
 {
     protected array $batch = [];
-    protected int $batchSize = 500; // уменьшенный размер батча
+    protected int $batchSize = 500;
     protected array $existingProductsByManufacturer = [];
 
     public int $inserted = 0;
@@ -36,14 +36,12 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
             return;
         }
 
-        // --- получаем или создаём производителя ---
         $manufacturer = Manufacturer::firstOrCreate(
             ['name' => $manufacturerName],
             ['id' => (string) Str::uuid()]
         );
         $manufacturerId = $manufacturer->id;
 
-        // --- кешируем существующие продукты этого производителя ---
         if (!isset($this->existingProductsByManufacturer[$manufacturerId])) {
             $this->existingProductsByManufacturer[$manufacturerId] = Product::where('manufacturer_id', $manufacturerId)
                 ->pluck('name')
@@ -51,7 +49,6 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
                 ->toArray();
         }
 
-        // --- проверка дубликата ---
         if (in_array(mb_strtolower($name), $this->existingProductsByManufacturer[$manufacturerId])) {
             $this->skipped++;
             return;
@@ -87,11 +84,10 @@ class ProductSheetImport implements OnEachRow, WithChunkReading, SkipsEmptyRows
     protected function flushBatch(): void
     {
         if (!empty($this->batch)) {
-            // --- upsert для игнорирования дубликатов по name + manufacturer_id ---
             Product::upsert(
                 $this->batch,
-                ['name', 'manufacturer_id'], // ключи для уникальности
-                ['description', 'slug', 'updated_at'] // что обновлять
+                ['name', 'manufacturer_id'],
+                ['description', 'slug', 'updated_at']
             );
             $this->batch = [];
         }
