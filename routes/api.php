@@ -61,7 +61,7 @@ Route::post('/callback', [CallbackController::class, 'store']);    // Обрат
 Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
 
 Route::get('/documents', [DocumentController::class, 'index']);
-Route::get('/documents/{filename}', [DocumentController::class, 'show']);
+Route::get('/documents/{id}', [DocumentController::class, 'show']);
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PRODUCTS
@@ -134,7 +134,9 @@ Route::middleware(['api', 'auth:api'])->group(function () {
             Route::get('/reviews', [ReviewController::class, 'all']);
 
 
-            Route::post('/certificates', [CertificateController::class, 'store']);
+            Route::post('/certificates/import', [CertificateController::class, 'store']);
+
+            Route::post('/documents/import', [DocumentController::class, 'store']);
 
             Route::prefix('orders')->group(function () {
                 Route::get('/', [OrderController::class, 'index']);

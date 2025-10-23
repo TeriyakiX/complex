@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\DocumentResource;
+use App\Models\Document;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
@@ -12,26 +14,16 @@ class DocumentController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Document::query();
+
+        if ($search = $request->query('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
         $perPage = (int) $request->query('per_page', 15);
-        $page = (int) $request->query('page', 1);
+        $documents = $query->paginate($perPage);
 
-        $files = collect(Storage::disk('public')->files('docs'))
-            ->map(function ($file) {
-                return [
-                    'name' => basename($file),
-                    'url' => url('/api/documents/' . urlencode(basename($file))),
-                ];
-            });
-
-        $paginator = new LengthAwarePaginator(
-            $files->forPage($page, $perPage)->values(),
-            $files->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        $resourceData = JsonResource::collection($paginator)->response()->getData(true);
+        $resourceData = DocumentResource::collection($documents)->response()->getData(true);
 
         return response()->json([
             'message' => 'Документы успешно получены',
@@ -41,16 +33,35 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function show($filename)
+    public function show($id)
     {
-        $filename = urldecode($filename);
-        $path = 'docs/' . $filename;
+        $document = \App\Models\Document::find($id);
 
-        if (!Storage::disk('public')->exists($path)) {
-            return response()->json(['error' => 'Файл не найден'], Response::HTTP_NOT_FOUND);
+        if (!$document) {
+            return response()->json(['error' => 'Документ не найден'], 404);
         }
 
-        // просто отдаём PDF для просмотра
-        return response()->file(storage_path('app/public/' . $path));
+        if (!$document->path || !Storage::disk('public')->exists($document->path)) {
+            return response()->json(['error' => 'Файл не найден'], 404);
+        }
+
+        return response()->file(storage_path('app/public/' . $document->path));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:pdf|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('docs', 'public');
+
+        $document = Document::create([
+            'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'path' => $path,
+        ]);
+
+        return new DocumentResource($document);
     }
 }
