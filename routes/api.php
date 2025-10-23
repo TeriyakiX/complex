@@ -140,6 +140,7 @@ Route::middleware(['api', 'auth:api'])->group(function () {
                 Route::get('/', [CertificateController::class, 'index']);
                 Route::get('/{certificate}', [CertificateController::class, 'show']);
                 Route::post('/import', [CertificateController::class, 'store']);
+                Route::delete('/{certificate}', [CertificateController::class, 'destroy']);
             });
 
             Route::prefix('documents')->group(function () {

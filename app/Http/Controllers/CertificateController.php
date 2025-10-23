@@ -51,4 +51,17 @@ class CertificateController extends Controller
             'data'    => new CertificateResource($certificate),
         ], 201);
     }
+
+
+    public function destroy(Certificate $certificate)
+    {
+        if ($certificate->image && Storage::disk('public')->exists($certificate->image)) {
+            Storage::disk('public')->delete($certificate->image);
+        }
+        $certificate->delete();
+
+        return response()->json([
+            'message' => 'Сертификат успешно удалён'
+        ]);
+    }
 }
