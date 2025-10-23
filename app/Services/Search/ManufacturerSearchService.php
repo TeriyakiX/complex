@@ -2,7 +2,9 @@
 
 namespace App\Services\Search;
 
+use App\Http\Resources\DocumentResource;
 use App\Http\Resources\Warehouse\WarehouseProductResource;
+use App\Models\Document;
 use App\Models\Manufacturer;
 use App\Models\Product;
 use App\Http\Resources\Manufacturer\ManufacturerResource;
@@ -78,6 +80,22 @@ class ManufacturerSearchService
                 );
             }
 
+            $documentQuery = Document::where('name', 'like', "%{$search}%");
+
+            if ($documentQuery->count() > 0) {
+                $paginated = $documentQuery->paginate($perPage);
+                $resource = DocumentResource::collection($paginated)
+                    ->response()
+                    ->getData(true);
+
+                return new SearchResultDTO(
+                    type: 'documents',
+                    message: "Найдено по документам: {$search}",
+                    data: $resource['data'],
+                    links: $resource['links'],
+                    meta: $resource['meta'],
+                );
+            }
             // Ничего не найдено
             return new SearchResultDTO(
                 type: 'none',
