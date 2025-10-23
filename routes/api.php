@@ -60,8 +60,6 @@ Route::get('/reviews', [ReviewController::class, 'index']);         // Публ�
 Route::post('/callback', [CallbackController::class, 'store']);    // Обратная связь
 Route::post('/reviews', [ReviewController::class, 'store']); // Отправить отзыв
 
-Route::get('/documents', [DocumentController::class, 'index']);
-Route::get('/documents/{id}', [DocumentController::class, 'show']);
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PRODUCTS
@@ -75,6 +73,11 @@ Route::prefix('products')->middleware('api')->group(function () {
 Route::prefix('certificates')->group(function () {
     Route::get('/', [CertificateController::class, 'index']);
     Route::get('/{certificate}', [CertificateController::class, 'show']);
+});
+
+Route::prefix('documents')->group(function () {
+    Route::get('/', [DocumentController::class, 'index']);
+    Route::get('/{id}', [DocumentController::class, 'show']);
 });
 
 Route::prefix('manufacturers')->group(function () {
@@ -134,10 +137,14 @@ Route::middleware(['api', 'auth:api'])->group(function () {
             Route::get('/reviews', [ReviewController::class, 'all']);
 
             Route::prefix('certificates')->group(function () {
+                Route::get('/', [CertificateController::class, 'index']);
+                Route::get('/{certificate}', [CertificateController::class, 'show']);
                 Route::post('/import', [CertificateController::class, 'store']);
             });
 
             Route::prefix('documents')->group(function () {
+                Route::get('/', [DocumentController::class, 'index']);
+                Route::get('/{id}', [DocumentController::class, 'show']);
                 Route::post('/import', [DocumentController::class, 'store']);
             });
 
