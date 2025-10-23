@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminStatsController;
 use App\Http\Controllers\Admin\ProductImportController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ImportManufacturerController;
 use App\Http\Controllers\ManufacturerExportController;
@@ -70,6 +71,12 @@ Route::prefix('products')->middleware('api')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/{product:slug}', [ProductController::class, 'show']);
 });
+
+
+Route::get('/certificates', [CertificateController::class, 'index']);
+Route::get('/certificates/{certificate}', [CertificateController::class, 'show']);
+
+
 Route::prefix('manufacturers')->group(function () {
     Route::get('/', [ManufacturerController::class, 'index']);
     Route::get('/{manufacturer}', [ManufacturerController::class, 'show']);
@@ -125,6 +132,9 @@ Route::middleware(['api', 'auth:api'])->group(function () {
         Route::middleware('can:is-admin')->group(function () {
             Route::put('/reviews/{review}/{status}', [ReviewController::class, 'changeStatus']);
             Route::get('/reviews', [ReviewController::class, 'all']);
+
+
+            Route::post('/certificates', [CertificateController::class, 'store']);
 
             Route::prefix('orders')->group(function () {
                 Route::get('/', [OrderController::class, 'index']);
