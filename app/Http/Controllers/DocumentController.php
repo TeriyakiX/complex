@@ -62,6 +62,9 @@ class DocumentController extends Controller
             'path' => $path,
         ]);
 
-        return new DocumentResource($document);
+        return response()->json([
+            'message' => 'Документ добавлен',
+            'data' => new DocumentResource($document),
+        ]);
     }
 }
