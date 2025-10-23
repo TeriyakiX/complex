@@ -72,10 +72,10 @@ Route::prefix('products')->middleware('api')->group(function () {
     Route::get('/{product:slug}', [ProductController::class, 'show']);
 });
 
-
-Route::get('/certificates', [CertificateController::class, 'index']);
-Route::get('/certificates/{certificate}', [CertificateController::class, 'show']);
-
+Route::prefix('certificates')->group(function () {
+    Route::get('/', [CertificateController::class, 'index']);
+    Route::get('/{certificate}', [CertificateController::class, 'show']);
+});
 
 Route::prefix('manufacturers')->group(function () {
     Route::get('/', [ManufacturerController::class, 'index']);
@@ -133,10 +133,13 @@ Route::middleware(['api', 'auth:api'])->group(function () {
             Route::put('/reviews/{review}/{status}', [ReviewController::class, 'changeStatus']);
             Route::get('/reviews', [ReviewController::class, 'all']);
 
+            Route::prefix('certificates')->group(function () {
+                Route::post('/import', [CertificateController::class, 'store']);
+            });
 
-            Route::post('/certificates/import', [CertificateController::class, 'store']);
-
-            Route::post('/documents/import', [DocumentController::class, 'store']);
+            Route::prefix('documents')->group(function () {
+                Route::post('/import', [DocumentController::class, 'store']);
+            });
 
             Route::prefix('orders')->group(function () {
                 Route::get('/', [OrderController::class, 'index']);
